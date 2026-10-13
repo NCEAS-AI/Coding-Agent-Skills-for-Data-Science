@@ -1,0 +1,461 @@
+<!doctype html>
+<!-- __GENERATED_COMMENT__ -->
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>__TITLE__</title>
+<meta name="description" content="__DESCRIPTION__">
+<meta name="generated" content="__GENERATED__">
+__ROBOTS__
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.css" integrity="sha384-uTttxo/aOKbdE5RlD/SPzSDoDmNvGlUYPjONi2MN/b7c9HPSvW07OIuyP7uL6jxK" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.js" integrity="sha384-5+cfbwT0iiub6VsQAdn6yz16nr6sDiQoHx6tm4O8OVYXHYOxcffFmCJBL0dgdvGp" crossorigin="anonymous"></script>
+<style>
+/* ---- design tokens: the same set as the chart pages (one design system across maps and charts) ---- */
+:root{
+  --bg:#F5F7F9; --surface:#FFFFFF; --raised:#FBFCFD; --ink:#13202C; --ink-2:#465667; --ink-3:#768494;
+  --line:#E1E6EB; --line-2:#CBD3DB; --accent:#1B4F8A; --accent-ink:#FFFFFF; --accent-soft:#E7EFF8;
+  --shadow:0 1px 2px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.14);
+  --f-sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --ph:0px; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1217; --surface:#141B22; --raised:#18212A; --ink:#E7EDF3; --ink-2:#A8B5C2; --ink-3:#7B8895;
+  --line:#243039; --line-2:#33414D; --accent:#7EB2EE; --accent-ink:#0D1217; --accent-soft:#18283A;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.45); color-scheme:dark; }}
+:root[data-theme="dark"]{
+  --bg:#0D1217; --surface:#141B22; --raised:#18212A; --ink:#E7EDF3; --ink-2:#A8B5C2; --ink-3:#7B8895;
+  --line:#243039; --line-2:#33414D; --accent:#7EB2EE; --accent-ink:#0D1217; --accent-soft:#18283A;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.45); color-scheme:dark; }
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--f-sans);-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#map{position:fixed;inset:0}
+/* ---- side panel (desktop) / bottom drawer (phone) ---- */
+#panel{position:fixed;z-index:5;top:12px;left:12px;width:368px;max-height:calc(100% - 24px);display:flex;flex-direction:column;
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.ph{display:flex;gap:10px;align-items:flex-start;padding:14px 12px 10px 16px}
+.ph .t{flex:1;min-width:0}
+.eyebrow{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px}
+h1{font-size:16.5px;line-height:1.35;margin:0;font-weight:600;letter-spacing:-.01em}
+#pbody{overflow-y:auto;padding:0 16px 16px;overscroll-behavior:contain}
+#panel.closed #pbody{display:none}
+#panel h2{font:500 11.5px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin:20px 0 8px}
+.subtitle{color:var(--ink);margin:0 0 8px;font-size:14.5px;line-height:1.45}
+.lede{color:var(--ink-2);margin:0 0 12px;font-size:14.5px}
+details.howto{border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--raised);font-size:14px}
+/* the open/close chevron is a real icon inside the box: the browser's own triangle sits on the border in some browsers */
+details.howto summary{font-weight:600;list-style:none;display:flex;align-items:center;gap:8px;padding:2px 0}
+details.howto summary::-webkit-details-marker{display:none}
+details.howto summary::marker{content:""}
+details.howto .chev{flex:none;width:14px;height:14px;color:var(--ink-2);transition:transform .15s}
+details.howto[open] .chev{transform:rotate(90deg)}
+details.howto[open] summary{margin-bottom:6px}
+details.howto p{margin:6px 0;color:var(--ink-2)}
+.seg,.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.seg button,.tabs button{font:500 13.5px/1 var(--f-sans);padding:8px 12px;border-radius:999px;border:1px solid var(--line-2);
+  background:var(--surface);color:var(--ink-2);transition:background .15s,border-color .15s,color .15s}
+.seg button:hover,.tabs button:hover{border-color:var(--ink-3);color:var(--ink)}
+.seg button[aria-pressed="true"],.tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.note{font-size:13px;color:var(--ink-2);margin:8px 0 0}
+.lay{border-top:1px solid var(--line);padding:12px 0}
+.lay:first-child{border-top:0;padding-top:2px}
+.lrow{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14.5px}
+.lrow .cnt{font-weight:400}
+.ldesc{font-size:13px;color:var(--ink-2);margin:4px 0 0 28px}
+.cats{list-style:none;margin:8px 0 0 28px;padding:0;display:grid;gap:7px}
+.cats label{display:flex;align-items:center;gap:9px;font-size:14px}
+.sw{width:15px;height:15px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.35)}
+.sw.sq{border-radius:3px}
+.sw.ln{width:24px;height:0;border-radius:2px;border-top:3px solid;box-shadow:0 0 0 1.5px rgba(11,18,24,.55)}
+.cnt{margin-left:auto;font:400 12.5px var(--f-mono);color:var(--ink-3);font-variant-numeric:tabular-nums}
+.grad{height:12px;border-radius:6px;margin:10px 0 4px 28px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.gl{display:flex;justify-content:space-between;margin-left:28px;font:400 12px var(--f-mono);color:var(--ink-3)}
+.gt{margin:6px 0 0 28px;font-size:13px;color:var(--ink-2)}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);margin:0;flex:none}
+.srcs ul{padding-left:18px;margin:0;font-size:13px;color:var(--ink-2)}
+.srcs li{margin:3px 0}
+.foot{font-size:12.5px;color:var(--ink-3);margin-top:10px}
+.iconbtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);
+  display:grid;place-items:center;flex:none;font:500 18px/1 var(--f-sans);padding:0}
+.iconbtn svg{transition:transform .2s}
+#panel.closed #panelToggle svg{transform:rotate(180deg)}
+.fitbtn{margin-top:8px;font:500 13px var(--f-sans);padding:7px 11px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2)}
+/* ---- hover cards and the phone details sheet ---- */
+.maplibregl-popup-content{background:var(--surface);color:var(--ink);border-radius:10px;box-shadow:var(--shadow);padding:10px 12px;font:400 13.5px/1.45 var(--f-sans)}
+.maplibregl-popup-anchor-top .maplibregl-popup-tip,.maplibregl-popup-anchor-top-left .maplibregl-popup-tip,.maplibregl-popup-anchor-top-right .maplibregl-popup-tip{border-bottom-color:var(--surface)}
+.maplibregl-popup-anchor-bottom .maplibregl-popup-tip,.maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,.maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip{border-top-color:var(--surface)}
+.maplibregl-popup-anchor-left .maplibregl-popup-tip{border-right-color:var(--surface)}
+.maplibregl-popup-anchor-right .maplibregl-popup-tip{border-left-color:var(--surface)}
+.maplibregl-popup-close-button{font-size:18px;width:28px;height:28px;color:var(--ink-2)}
+.card .ct{font-weight:600;display:flex;gap:8px;align-items:center;margin:0 18px 2px 0;font-size:14px}
+.card p{margin:4px 0;color:var(--ink-2)}
+.card dl{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;margin:8px 0 0;font-size:13px}
+.card dt{color:var(--ink-3)} .card dd{margin:0;font-variant-numeric:tabular-nums}
+#sheet{display:none;position:fixed;z-index:8;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));max-height:52vh;overflow:auto;
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:14px 16px}
+#sheetClose{position:absolute;top:8px;right:8px}
+.maplibregl-ctrl-attrib{font:400 11px var(--f-sans)}
+@media (min-width:761px){body:not(.pclosed) .maplibregl-ctrl-bottom-left{left:392px} html.embed body:not(.pclosed) .maplibregl-ctrl-bottom-left{left:322px}}   /* scale bars clear the open panel */
+/* ---- phone ---- */
+@media (max-width:760px){
+  #panel{top:auto;left:0;right:0;bottom:0;width:auto;border-radius:16px 16px 0 0;max-height:64vh;border-bottom:0;padding-bottom:env(safe-area-inset-bottom,0px)}
+  .ph{padding:10px 10px 10px 16px}
+  h1{font-size:15px}
+  #panel.closed h1{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .eyebrow{font-size:10.5px;margin-bottom:3px}
+  .maplibregl-ctrl-bottom-left,.maplibregl-ctrl-bottom-right{bottom:var(--ph)}
+}
+/* byline and the NCEAS / WRI / GitHub strip (identity.json) */
+.byline{margin:0 0 10px;font-size:14px;color:var(--ink-2)}
+.byline time{font-family:var(--f-mono);font-size:13px;white-space:nowrap}
+.brand{display:flex;flex-wrap:wrap;align-items:center;gap:14px 26px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.brand .org{display:inline-flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;transition:transform .18s ease}
+.brand .org:hover,.brand .org:focus-visible{transform:translateY(-2px) rotate(-1.5deg)}
+.brand .logo{height:40px;width:auto;flex:none;display:block}
+.brand svg.logo{color:var(--ink)}
+.brand .org b{display:block;font-size:14px;line-height:1.2}
+.brand .org small{display:block;font-size:12px;color:var(--ink-3);line-height:1.3;max-width:24ch}
+.brand .gh{flex-basis:100%;margin:0;font-size:13px;color:var(--ink-2)}
+.brand .gh{max-width:none}
+.brand .gh a{font-family:var(--f-mono);font-size:12.5px;white-space:nowrap}
+.brand .logo{height:34px}
+/* plain language / technical (spec fields *_tech) */
+.tech{display:none}
+html[data-lang="tech"] .tech{display:revert} html[data-lang="tech"] .plain{display:none}
+/* embedded in a chart page (vizkit.map_panel): slimmer panel, no title block */
+.eyebrow:empty{display:none}
+html.embed #panel{width:300px}
+html.embed h1{font-size:14.5px}
+html.embed .ph{padding:11px 10px 8px 14px}
+html.embed #pbody{padding:0 14px 12px}
+html.embed #pbody > section:first-of-type h2{margin-top:4px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div id="map" role="region" aria-label="Interactive map"></div>
+<aside id="panel" aria-label="Map key and controls">
+  <div class="ph">
+    <div class="t"><div class="eyebrow" id="eyebrow"></div><h1 id="title"></h1></div>
+    <button id="panelToggle" class="iconbtn" aria-expanded="true" aria-controls="pbody" aria-label="Hide or show the key">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 10l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+  <div id="pbody">
+    <p class="subtitle" id="subtitle"></p>
+    <p class="byline" id="byline"></p>
+    <p class="lede" id="lede"></p>
+    <details class="howto" id="howtoWrap"><summary><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>How to read this map</summary><div id="howto"></div></details>
+    <section id="langSec"><h2>Explanations</h2><div class="seg" id="langSeg">
+      <button type="button" data-l="plain" aria-pressed="true">Plain language</button><button type="button" data-l="tech" aria-pressed="false">Technical</button></div></section>
+    <section id="sitesSec"><h2>Places to look</h2><div class="tabs" id="sites" role="tablist"></div><p class="note" id="siteNote"></p></section>
+    <section><h2>Base map</h2><div class="seg" id="bm"></div><p class="note" id="bmNote"></p></section>
+    <section><h2>Layers</h2><div id="layers"></div></section>
+    <section class="srcs" id="srcsSec"><h2>Sources</h2><ul id="sources"></ul><p class="foot" id="footer"></p><div id="brand"></div></section>
+  </div>
+</aside>
+<div id="sheet" role="dialog" aria-label="Details" tabindex="-1"><button id="sheetClose" class="iconbtn" aria-label="Close details">&times;</button><div id="sheetBody"></div></div>
+<script type="application/json" id="cfg">__CONFIG__</script>
+__DATA__
+<script>
+"use strict";
+const C = JSON.parse(document.getElementById('cfg').textContent);
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const phone = () => innerWidth <= 760;
+if(C.embed) document.documentElement.classList.add('embed');
+// a host chart page can switch light / dark for the map too
+addEventListener('message', e => { if(e.data && (e.data.theme === 'light' || e.data.theme === 'dark')) document.documentElement.dataset.theme = e.data.theme; });
+const canHover = matchMedia('(hover:hover) and (pointer:fine)').matches;
+
+// ---------- panel text (spec text fields are trusted HTML written by the page author)
+$('eyebrow').innerHTML = C.eyebrow || ''; $('title').innerHTML = C.title || '';
+$('subtitle').innerHTML = C.subtitle || ''; if(!C.subtitle) $('subtitle').remove();
+$('lede').innerHTML = C.lede || ''; if(!C.lede) $('lede').remove();
+const both = (pl, te) => te ? '<div class="plain">' + (pl || '') + '</div><div class="tech">' + te + '</div>' : (pl || '');
+if(C.how_to_read) $('howto').innerHTML = both(C.how_to_read, C.how_to_read_tech); else $('howtoWrap').remove();
+// plain / technical: shown only when the spec has technical text; a host chart page can switch it too
+const hasTech = !!(C.how_to_read_tech || (C.layers || []).some(L => L.description_tech || (L.tooltip || {}).text_tech));
+function setLang(l){ document.documentElement.dataset.lang = l;
+  document.querySelectorAll('#langSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.l === l))); }
+if(hasTech) document.querySelectorAll('#langSeg button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.l)));
+else $('langSec').remove();
+addEventListener('message', e => { if(e.data && (e.data.lang === 'plain' || e.data.lang === 'tech')) setLang(e.data.lang); });
+$('footer').innerHTML = C.footer || '';
+$('byline').outerHTML = C.byline || ''; $('brand').outerHTML = C.brand || '';
+(C.sources || []).forEach(s => { const li = document.createElement('li'); li.innerHTML = s; $('sources').appendChild(li); });
+if(C.embed || (!(C.sources || []).length && !C.footer && !C.brand)) $('srcsSec').remove();
+const panel = $('panel');
+function setPanel(open){ panel.classList.toggle('closed', !open); document.body.classList.toggle('pclosed', !open); $('panelToggle').setAttribute('aria-expanded', String(open)); syncPh(); }
+function syncPh(){ document.documentElement.style.setProperty('--ph', phone() ? panel.offsetHeight + 'px' : '0px'); }
+$('panelToggle').addEventListener('click', () => setPanel(panel.classList.contains('closed')));
+setPanel(!phone());
+new ResizeObserver(syncPh).observe(panel);
+
+// ---------- formatting for hover cards
+function fmt(v, f){
+  if(v === null || v === undefined || v === '') return null;
+  if(f.labels && f.labels[String(v)] !== undefined) v = f.labels[String(v)];
+  const n = Number(v), fm = f.format || 'text';
+  let s;
+  if(fm === 'int' && isFinite(n)) s = Math.round(n).toLocaleString('en-US');
+  else if(/^num[0-9]$/.test(fm) && isFinite(n)) s = n.toLocaleString('en-US', {minimumFractionDigits:+fm[3], maximumFractionDigits:+fm[3]});
+  else if(fm === 'pct' && isFinite(n)) s = (n * 100).toLocaleString('en-US', {maximumFractionDigits:f.decimals ?? 0}) + '%';
+  else if(fm === 'pct100' && isFinite(n)) s = n.toLocaleString('en-US', {maximumFractionDigits:f.decimals ?? 0}) + '%';
+  else s = String(v);
+  return (f.prefix || '') + s + (f.suffix || '');
+}
+function catOf(L, p){ const cb = L.color_by; if(!cb || cb.type !== 'categorical') return null;
+  const v = String(p[cb.field]); return cb.categories.find(c => String(c.value) === v) || null; }
+function card(L, p){
+  const t = L.tooltip || {};
+  if(t.html_field && p[t.html_field]) return '<div class="card">' + p[t.html_field] + '</div>';
+  const c = catOf(L, p);
+  let title = t.title_field ? fmt(p[t.title_field], {format:t.title_format, labels:t.title_labels}) : (t.title || (c ? c.label : L.name));
+  const sw = c ? '<span class="sw" style="background:' + c.color + '"></span>' : '';
+  let h = '<div class="card"><div class="ct">' + sw + esc(title) + '</div>';
+  if(t.text) h += '<p>' + both(t.text, t.text_tech) + '</p>';
+  const rows = (t.fields || []).map(f => [f.label, fmt(p[f.field], f)]).filter(r => r[1] !== null);
+  if(rows.length) h += '<dl>' + rows.map(r => '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>').join('') + '</dl>';
+  return h + '</div>';
+}
+
+// ---------- style expressions
+function colorExpr(L){
+  const cb = L.color_by, st = L.style || {};
+  if(!cb) return st.color || '#3B82F6';
+  if(cb.type === 'categorical'){
+    const e = ['match', ['to-string', ['get', cb.field]]];
+    cb.categories.forEach(c => e.push(String(c.value), c.color)); e.push(cb.other_color || '#9AA3AD'); return e;
+  }
+  const e = ['interpolate', ['linear'], ['to-number', ['get', cb.field]]]; cb.stops.forEach(s => e.push(s[0], s[1]));
+  return ['case', ['==', ['get', cb.field], null], cb.nodata_color || '#9AA3AD', e];
+}
+function edgeExpr(L){
+  const cb = L.color_by, st = L.style || {};
+  if(cb && cb.type === 'categorical' && cb.categories.some(c => c.edge)){
+    const e = ['match', ['to-string', ['get', cb.field]]];
+    cb.categories.forEach(c => e.push(String(c.value), c.edge || st.outline || '#FFFFFF')); e.push(st.outline || '#FFFFFF'); return e;
+  }
+  return st.outline || (L.kind === 'polygon' ? colorExpr(L) : '#FFFFFF');
+}
+const hov = (a, b) => ['case', ['boolean', ['feature-state', 'hover'], false], a, b];
+
+// ---------- map
+const basePad = () => phone() ? {top:24, right:24, left:24, bottom:panel.offsetHeight + 24}
+                              : {top:40, right:40, bottom:40, left:panel.classList.contains('closed') ? 40 : (C.embed ? 330 : 400)};
+let map = null;
+// The map is created only once its final style is known, and overlays go on at 'style.load'. (Adding them on
+// the first 'styledata' event raced the style load and sometimes left the map without overlays.)
+function start(style){
+  map = new maplibregl.Map({container:'map', style:style,
+    bounds:[[C.bounds[0], C.bounds[1]], [C.bounds[2], C.bounds[3]]], fitBoundsOptions:{padding:basePad()},
+    maxZoom:20, dragRotate:false, pitchWithRotate:false, attributionControl:false, hash:C.hash === false ? false : 'view',
+    cooperativeGestures:!!C.embed});           // embedded: two fingers / Ctrl+scroll move the map, so the page still scrolls
+  map.touchZoomRotate.disableRotation();
+  map.addControl(new maplibregl.NavigationControl({showCompass:false}), 'top-right');
+  if(C.embed) map.addControl(new maplibregl.FullscreenControl(), 'top-right');
+  map.addControl(new maplibregl.ScaleControl({unit:'imperial', maxWidth:110}), 'bottom-left');
+  map.addControl(new maplibregl.ScaleControl({unit:'metric', maxWidth:110}), 'bottom-left');
+  map.addControl(new maplibregl.AttributionControl({compact:true}), 'bottom-right');
+  map.once('style.load', addOverlays);
+  map.once('load', () => {
+    addOverlays();                                   // no-op if 'style.load' already added them
+    if(!location.hash.includes('view=')) fly(C.bounds, false);
+    document.querySelectorAll('.maplibregl-ctrl-attrib').forEach(e => {      // start the credits folded
+      e.classList.remove('maplibregl-compact-show'); e.removeAttribute('open'); });
+  });
+}
+
+const NAIP_URL = 'https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPPlus/ImageServer/exportImage?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=512,512&format=jpg&f=image';
+const ESRI_URL = 'https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+const ESRI_ATTR = 'Imagery: Esri, Maxar, Earthstar Geographics, and the GIS User Community';
+const NAIP_ATTR = 'Aerial photo: USDA NAIP via USGS The National Map (public domain)';
+const BM = {
+  satellite:{label:'Satellite', note:'Esri World Imagery. Image dates vary by place and can be before or after an event; check before reading damage from the photo.'},
+  aerial:{label:'Aerial (NAIP)', note:'USDA NAIP aerial photography via USGS The National Map: the most recent flight here, which can be after an event.'},
+  map:{label:'Map', note:'Street map: OpenStreetMap data via OpenFreeMap.'},
+  hybrid:{label:'Hybrid', note:'Esri World Imagery with street and place labels from OpenStreetMap.'}
+};
+Object.entries(C.basemap_notes || {}).forEach(([k, v]) => { if(BM[k]) BM[k].note = v; });
+const modes = (C.basemaps || ['satellite','aerial','map','hybrid']).filter(m => BM[m]);
+let mode = modes.includes(C.basemap) ? C.basemap : modes[0];
+let vecLayers = [], symLayers = [];
+modes.forEach(m => { const b = document.createElement('button'); b.type = 'button'; b.dataset.m = m; b.textContent = BM[m].label;
+  b.addEventListener('click', () => setBase(m)); $('bm').appendChild(b); });
+function vis(id, on){ if(map && map.getLayer(id)) map.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none'); }
+function setBase(m){
+  mode = m; vis('bm-esri', m === 'satellite' || m === 'hybrid'); vis('bm-naip', m === 'aerial');
+  vecLayers.forEach(id => vis(id, m === 'map' || (m === 'hybrid' && symLayers.includes(id))));
+  document.querySelectorAll('#bm button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === m)));
+  $('bmNote').textContent = BM[m].note;
+}
+const rasterBase = {
+  sources:{ 'bm-esri':{type:'raster', tiles:[ESRI_URL], tileSize:256, maxzoom:19, attribution:ESRI_ATTR},
+            'bm-naip':{type:'raster', tiles:[NAIP_URL], tileSize:256, maxzoom:20, attribution:NAIP_ATTR} },
+  layers:[ {id:'bm-esri', type:'raster', source:'bm-esri', layout:{visibility:'none'}},
+           {id:'bm-naip', type:'raster', source:'bm-naip', layout:{visibility:'none'}} ]
+};
+// the street-map style is optional: if it has not arrived in 6 s, start with imagery only rather than a blank page
+const styleCtl = new AbortController(); setTimeout(() => styleCtl.abort(), 6000);
+fetch('https://tiles.openfreemap.org/styles/' + (C.vector_style || 'liberty'), {signal:styleCtl.signal}).then(r => r.json()).then(st => {
+  st.layers.forEach(l => { l.layout = l.layout || {}; });
+  vecLayers = st.layers.filter(l => l.type !== 'background').map(l => l.id);
+  symLayers = st.layers.filter(l => l.type === 'symbol').map(l => l.id);
+  Object.assign(st.sources, rasterBase.sources);
+  st.layers.splice(1, 0, ...rasterBase.layers);
+  start(st);
+}).catch(() => {
+  modes.splice(0, modes.length, ...modes.filter(m => m === 'satellite' || m === 'aerial'));
+  document.querySelectorAll('#bm button').forEach(b => { if(!modes.includes(b.dataset.m)) b.remove(); });
+  if(!modes.includes(mode)) mode = 'satellite';
+  start({version:8, sources:rasterBase.sources, layers:rasterBase.layers});
+});
+
+// ---------- overlays
+const hidden = {};         // layer id -> Set of hidden category values
+const sub = {};            // layer id -> map layer ids drawn for it
+const hitLayers = [];      // map layer ids that answer hover/tap, top-most first
+function dataFor(L){ if(L.url) return L.url; const el = $('d-' + L.id); return el ? JSON.parse(el.textContent) : {type:'FeatureCollection', features:[]}; }
+function addOverlays(){
+  if(map.getSource('ov-' + (C.layers[0] || {}).id)) return;
+  C.layers.forEach(L => {
+    const src = 'ov-' + L.id, st = L.style || {}, ids = [], v = L.visible === false ? 'none' : 'visible';
+    const zoom = o => { if(L.minzoom != null) o.minzoom = L.minzoom; if(L.maxzoom != null) o.maxzoom = L.maxzoom; return o; };
+    if(L.kind === 'raster'){
+      map.addSource(src, {type:'image', url:L.image.src, coordinates:L.image.coordinates});
+      map.addLayer(zoom({id:L.id + '-img', type:'raster', source:src, layout:{visibility:v},
+        paint:{'raster-opacity':L.opacity ?? .75, 'raster-resampling':L.resampling || 'nearest', 'raster-fade-duration':0}})); ids.push(L.id + '-img');
+    } else {
+      map.addSource(src, {type:'geojson', data:dataFor(L), generateId:true});
+      if(L.kind === 'line'){
+        const w = st.width ?? 2;
+        if(st.halo !== false) { map.addLayer(zoom({id:L.id + '-halo', type:'line', source:src, layout:{visibility:v, 'line-join':'round'},
+          paint:{'line-color':st.halo_color || '#0B1218', 'line-width':w + 2.6, 'line-opacity':.45}})); ids.push(L.id + '-halo'); }
+        const p = {'line-color':colorExpr(L), 'line-width':hov(w + 1.5, w), 'line-opacity':st.opacity ?? 1};
+        if(st.dash) p['line-dasharray'] = st.dash;
+        map.addLayer(zoom({id:L.id + '-line', type:'line', source:src, layout:{visibility:v, 'line-join':'round'}, paint:p})); ids.push(L.id + '-line');
+        map.addLayer(zoom({id:L.id + '-hit', type:'line', source:src, layout:{visibility:v}, paint:{'line-color':'#000', 'line-width':14, 'line-opacity':0.001}}));
+        ids.push(L.id + '-hit'); if(L.tooltip) hitLayers.unshift(L.id + '-hit');
+      } else if(L.kind === 'polygon'){
+        map.addLayer(zoom({id:L.id + '-fill', type:'fill', source:src, layout:{visibility:v},
+          paint:{'fill-color':colorExpr(L), 'fill-opacity':hov(Math.min(1, (st.fill_opacity ?? .55) + .2), st.fill_opacity ?? .55)}}));
+        map.addLayer(zoom({id:L.id + '-line', type:'line', source:src, layout:{visibility:v},
+          paint:{'line-color':edgeExpr(L), 'line-width':hov((st.outline_width ?? 1) + 1.6, st.outline_width ?? 1), 'line-opacity':.95}}));
+        ids.push(L.id + '-fill', L.id + '-line'); if(L.tooltip) hitLayers.unshift(L.id + '-fill');
+      } else {
+        const r = st.radius || [[8, 2.5], [12, 4], [16, 7]], rad = ['interpolate', ['linear'], ['zoom']];
+        r.forEach(s => rad.push(s[0], s[1]));
+        const lay = {visibility:v}, cb = L.color_by;
+        if(cb && cb.type === 'categorical'){            // the first class in the key draws on top
+          const k = ['match', ['to-string', ['get', cb.field]]], n = cb.categories.length;
+          cb.categories.forEach((c, i) => k.push(String(c.value), n - i)); k.push(0); lay['circle-sort-key'] = k; }
+        map.addLayer(zoom({id:L.id + '-pt', type:'circle', source:src, layout:lay, paint:{
+          'circle-radius':rad, 'circle-color':colorExpr(L), 'circle-opacity':st.opacity ?? .95,
+          'circle-stroke-color':edgeExpr(L), 'circle-stroke-width':hov(2.6, st.outline_width ?? .7)}}));
+        ids.push(L.id + '-pt'); if(L.tooltip) hitLayers.unshift(L.id + '-pt');
+      }
+    }
+    sub[L.id] = ids; hidden[L.id] = new Set();
+  });
+  setBase(mode); buildKey(); wire();
+}
+
+// ---------- key = layer control (visibility + category filters + counts)
+function swatch(L, color){
+  const s = document.createElement('span');
+  s.className = 'sw' + (L.kind === 'polygon' || L.kind === 'raster' ? ' sq' : L.kind === 'line' ? ' ln' : '');
+  if(L.kind === 'line') s.style.borderTopColor = color, s.style.borderTopStyle = (L.style || {}).dash ? 'dashed' : 'solid';
+  else s.style.background = color;
+  return s;
+}
+function applyFilter(L){
+  const cb = L.color_by, h = hidden[L.id];
+  const f = cb && h.size ? ['!', ['in', ['to-string', ['get', cb.field]], ['literal', [...h]]]] : null;
+  sub[L.id].forEach(id => { if(map.getLayer(id) && L.kind !== 'raster') map.setFilter(id, f); });
+}
+function buildKey(){
+  const box = $('layers');
+  C.layers.forEach(L => {
+    if(L.in_key === false) return;
+    const d = document.createElement('div'); d.className = 'lay';
+    const row = document.createElement('label'); row.className = 'lrow';
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = L.visible !== false;
+    cb.addEventListener('change', () => sub[L.id].forEach(id => vis(id, cb.checked)));
+    row.appendChild(cb);
+    const cbx = L.color_by;
+    if(!cbx) row.appendChild(swatch(L, (L.style || {}).color || '#3B82F6'));
+    const nm = document.createElement('span'); nm.textContent = L.name; row.appendChild(nm);
+    if(L.count != null){ const c = document.createElement('span'); c.className = 'cnt'; c.textContent = L.count.toLocaleString('en-US'); row.appendChild(c); }
+    d.appendChild(row);
+    if(L.description){ const p = document.createElement('p'); p.className = 'ldesc'; p.innerHTML = both(L.description, L.description_tech); d.appendChild(p); }
+    if(cbx && cbx.type === 'categorical'){
+      const ul = document.createElement('ul'); ul.className = 'cats';
+      cbx.categories.forEach(c => {
+        const li = document.createElement('li'), lab = document.createElement('label'), x = document.createElement('input');
+        x.type = 'checkbox'; x.checked = true;
+        x.addEventListener('change', () => { x.checked ? hidden[L.id].delete(String(c.value)) : hidden[L.id].add(String(c.value)); applyFilter(L); });
+        lab.append(x, swatch(L, c.color));
+        const t = document.createElement('span'); t.textContent = c.label; lab.appendChild(t);
+        if(c.count != null){ const n = document.createElement('span'); n.className = 'cnt'; n.textContent = c.count.toLocaleString('en-US'); lab.appendChild(n); }
+        li.appendChild(lab); ul.appendChild(li);
+      });
+      d.appendChild(ul);
+    } else if(cbx && cbx.type === 'continuous'){
+      const g = document.createElement('div'); g.className = 'grad';
+      const lo = cbx.stops[0][0], hi = cbx.stops[cbx.stops.length - 1][0];
+      g.style.background = 'linear-gradient(90deg,' + cbx.stops.map(s => s[1] + ' ' + ((s[0] - lo) / (hi - lo) * 100).toFixed(1) + '%').join(',') + ')';
+      const gl = document.createElement('div'); gl.className = 'gl';
+      gl.innerHTML = '<span>' + esc(cbx.min_label ?? lo) + '</span><span>' + esc(cbx.max_label ?? hi) + '</span>';
+      d.append(g, gl);
+      if(cbx.label){ const t = document.createElement('div'); t.className = 'gt'; t.textContent = cbx.label; d.appendChild(t); }
+    }
+    box.appendChild(d);
+  });
+}
+
+// ---------- places to look (tabs)
+const sites = [{name:C.whole_label || 'Whole area', bounds:C.bounds, note:''}].concat(C.sites || []);
+function fly(b, anim){ if(map) map.fitBounds([[b[0], b[1]], [b[2], b[3]]], {padding:basePad(), maxZoom:C.max_fit_zoom || 17, duration:anim ? 900 : 0}); }
+if(!C.sites || !C.sites.length) $('sitesSec').remove();
+else sites.forEach((s, i) => {
+  const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'tab'); b.textContent = s.name;
+  b.setAttribute('aria-selected', String(i === 0));
+  b.addEventListener('click', () => { document.querySelectorAll('#sites button').forEach(x => x.setAttribute('aria-selected', String(x === b)));
+    $('siteNote').innerHTML = s.note || ''; fly(s.bounds, true); if(phone()) setPanel(false); });
+  $('sites').appendChild(b);
+});
+
+// ---------- hover (desktop) and tap (phone)
+const pop = new maplibregl.Popup({closeButton:false, closeOnClick:false, maxWidth:'320px', offset:12});
+let hovered = null;
+const layerOf = id => C.layers.find(L => sub[L.id] && sub[L.id].includes(id));
+function pick(e){
+  const ids = hitLayers.filter(id => map.getLayer(id) && map.getLayoutProperty(id, 'visibility') !== 'none');
+  if(!ids.length) return null;
+  const fs = map.queryRenderedFeatures(e.point, {layers:ids});
+  return fs.length ? fs[0] : null;
+}
+function setHover(f){
+  if(hovered) map.setFeatureState(hovered, {hover:false}); hovered = null;
+  if(f && f.id !== undefined){ hovered = {source:f.source, id:f.id}; map.setFeatureState(hovered, {hover:true}); }
+}
+function wire(){
+  map.on('mousemove', e => { if(!canHover) return; const f = pick(e);
+    map.getCanvas().style.cursor = f ? 'pointer' : '';
+    if(!f){ pop.remove(); setHover(null); return; }
+    setHover(f); pop.setLngLat(e.lngLat).setHTML(card(layerOf(f.layer.id), f.properties)).addTo(map); });
+  map.on('mouseout', () => { pop.remove(); setHover(null); });
+  map.on('click', e => { const f = pick(e);
+    if(canHover){ if(f){ pop.remove(); new maplibregl.Popup({maxWidth:'320px', offset:12}).setLngLat(e.lngLat).setHTML(card(layerOf(f.layer.id), f.properties)).addTo(map); } return; }
+    if(!f){ closeSheet(); return; }
+    setHover(f); $('sheetBody').innerHTML = card(layerOf(f.layer.id), f.properties); $('sheet').style.display = 'block'; });
+}
+function closeSheet(){ $('sheet').style.display = 'none'; setHover(null); }
+$('sheetClose').addEventListener('click', closeSheet);
+document.addEventListener('keydown', e => { if(e.key === 'Escape'){ closeSheet(); pop.remove(); } });
+</script>
+</body></html>

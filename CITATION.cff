@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use these skills, please cite them as below."
+title: "Coding-Agent Skills for Data Science"
+abstract: "Agent Skills (SKILL.md folders) that teach AI coding agents to do whole data-science jobs the way a research team does them. The first, wri-html-pages, turns any data-visualization request into an interactive HTML page in a house style, checks every panel for statistical rigor and on a phone, publishes it to a GitHub Pages site, and links it."
+type: software
+authors:
+  - family-names: Broderick
+    given-names: Carlo
+    orcid: "https://orcid.org/0009-0008-7775-6304"
+    affiliation: "National Center for Ecological Analysis and Synthesis, UC Santa Barbara"
+version: v1.0.0
+date-released: "2026-10-13"
+license: CC0-1.0
+url: "https://github.com/NCEAS-AI/Coding-Agent-Skills-for-Data-Science"
+repository-code: "https://github.com/NCEAS-AI/Coding-Agent-Skills-for-Data-Science"
+keywords:
+  - agent skills
+  - AI coding agents
+  - data visualization
+  - reproducible research
+  - Claude Code
+references:
+  - type: software
+    title: "Coding-Agent Rules for Data Science"
+    authors:
+      - family-names: Broderick
+        given-names: Carlo
+    doi: "10.5281/zenodo.21364495"
+    url: "https://github.com/NCEAS-AI/Coding-Agent-Rules-for-Data-Science"

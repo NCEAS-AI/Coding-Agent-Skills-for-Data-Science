@@ -1,0 +1,13 @@
+{
+  "_why": "Who made the page and for whom: shown on every map and chart page (byline, logos, GitHub), and where pages are published (github.pages_repo). The WRI team defaults; a personal copy at ~/.config/wri-html-pages/identity.json wins. Owner, 2026-10-12. Pages pick changes up when rebuilt; a page can override the author.",
+  "author": "Carlo Broderick",
+  "affiliation": "NCEAS, UC Santa Barbara",
+  "timezone": "America/Los_Angeles",
+  "orgs": [
+    {"short": "NCEAS", "name": "National Center for Ecological Analysis and Synthesis", "url": "https://www.nceas.ucsb.edu/",
+     "logo": "nceas-logo.svg", "logo_follows_text_colour": true},
+    {"short": "WRI", "name": "Wildfire Resilience Index", "url": "https://wildfireindex.org/", "logo": "wri-logo.png"}
+  ],
+  "github": {"label": "WRI-Science on GitHub", "url": "https://github.com/WRI-Science",
+             "pages_repo": "https://github.com/WRI-Science/public_publication"}
+}
