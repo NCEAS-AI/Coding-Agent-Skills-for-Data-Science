@@ -11,7 +11,7 @@ metadata:
 
 # wri-html-pages: maps and chart pages in our house style, published by link
 
-Version 1.7.0 (2026-10-13). Every page made with this skill looks and behaves the same way, works on
+Version 1.7.1 (2026-10-14). Every page made with this skill looks and behaves the same way, works on
 a phone and a desktop, carries a short dated title with a detailed subtitle, says who made it and when,
 and ends up at a link collaborators can open.
 

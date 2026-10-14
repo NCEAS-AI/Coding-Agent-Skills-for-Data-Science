@@ -304,7 +304,7 @@ details.checks[open] summary::before{transform:rotate(45deg)}
 details.checks ul{margin:6px 0 0;padding-left:18px} details.checks li{margin:3px 0}
 /* living pages: each panel carries when it was added / updated; page history at the foot */
 .pstamp{float:right;margin:0 0 6px 12px;font:400 11.5px var(--f-mono);color:var(--ink-3);white-space:nowrap}
-@media (max-width:560px){.pstamp{float:none;display:block;margin:0 0 4px}}
+@media (max-width:560px){.pstamp{float:none;display:block;margin:0 0 4px;white-space:normal}}
 section.panel{margin-top:22px}
 details.history{margin-top:40px;font-size:13.5px;color:var(--ink-2)}
 details.history summary{font:500 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
