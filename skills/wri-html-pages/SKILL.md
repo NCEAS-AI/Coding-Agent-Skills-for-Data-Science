@@ -11,7 +11,7 @@ metadata:
 
 # wri-html-pages: maps and chart pages in our house style, published by link
 
-Version 1.7.1 (2026-10-14). Every page made with this skill looks and behaves the same way, works on
+Version 1.8.0 (2026-10-15). Every page made with this skill looks and behaves the same way, works on
 a phone and a desktop, carries a short dated title with a detailed subtitle, says who made it and when,
 and ends up at a link collaborators can open.
 
@@ -119,8 +119,8 @@ to its live, newest version**, unasked, so the user never has to ask for the lin
 
 The archetypes these produce are the reference look:
 - Map: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/map-archetype-penguin-records-around-palmer-station-2026-10-13.html
-- Charts: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-13.html
-- A page built over several requests: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/exploration-archetype-palmer-penguins-built-step-step-2026-10-13.html
+- Charts: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-15.html
+- A page built over several requests: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/exploration-archetype-palmer-penguins-built-step-step-2026-10-15.html
 
 ## When the user critiques a page
 

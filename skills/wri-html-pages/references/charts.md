@@ -9,7 +9,7 @@ HTML/CSS + one tiny tooltip script, no chart library) and publishes them (`refer
 1. Read `references/house-style.md`. It is the team's standing preferences (audience, numbers,
    hovers, colours, layout) with the reason for each. It applies to maps too.
 2. Look at the archetype, which shows every component in use:
-   `examples/penguin_chart_demo.py` → https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-13.html
+   `examples/penguin_chart_demo.py` → https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-15.html
    When the user says "like the archetype but …", start from that script.
 
 ## Workflow
@@ -49,7 +49,7 @@ HTML/CSS + one tiny tooltip script, no chart library) and publishes them (`refer
 | `table(cols, rows, numeric=, phone=, shade=, col_tips=)` | exact values, top-N lists | right-aligns numeric columns; `phone="scroll"` or `"cards"` |
 | `legend(items)`, `note(title, html)`, `card(..., checks=[...])`, `section(...)` | layout pieces | `checks` = the rigor pass for that panel (rigor.md), shown as "How this panel was checked" |
 | `tip("Heading", "line", ..., meaning=, tech=)` | the `data-tip` text for any element | first line bold; `meaning` adds "What it suggests: …" (plain); `tech` is the technical version |
-| `dual(plain, technical, block=)` | captions, notes, ledes with two versions | the page shows a Plain language / Technical switch when any are used |
+| `dual(plain, technical, block=)` | captions, notes, ledes with two versions | the card (or note, section, header) holding it gets its own Plain / Technical switch |
 | `shade_key(lo, hi, scale=, better=, flag=, tip=, flag_tip=)` | key above a shaded table | |
 | `fint`, `fpct`, `fnum`, `ramp_color`, `RAMPS`, `SERIES` | formatting and colour | `fpct(0.123) → "12%"` |
 | `slug(title)` | the file name from the short dated title | `"Penguin records · 2026-10-13" → "penguin-records-2026-10-13"` |
@@ -83,6 +83,11 @@ headers (`col_tips`), keys (`tip=`), chart titles (`card(tip=)`). Write them fro
 end with an interpretation (`meaning=`); add `tech=` where the method matters. Captions can be
 `vk.dual(plain, technical)`. The cursor never changes; tipped labels get a faint dotted underline.
 
+The Plain / Technical switch is per panel: the page script finds every `.card`, `.note`, living
+`section.panel`, `section.sec` and the `header` that holds technical text (a `.tech` element or a tip with
+`tech=`) and gives it its own switch, top right. Text and tips follow their nearest such container, so
+keep a chart's technical text inside its card. Old pages pick this up when they are rebuilt.
+
 ## Shading tables
 
 `table(..., shade={col: {"scale": "good_bad", "better": "low"}})` tints a column's cells subtly (the
@@ -98,7 +103,7 @@ as for a standalone map (`references/map-spec.md`): layers, colours, hover cards
 base maps. In the panel the title, subtitle and sources are left to the page (put the map's data and
 base-map credits in the page's `sources`); `panel_title` names the key. Two fingers on a phone or Ctrl +
 scroll on a desktop move the map, so the page scrolls past it normally; it has a fullscreen button; the
-key folds into a bar on a phone; the page's light / dark switch carries into it.
+key folds into a bar on a phone; the page's light / dark switch and the Plain / Technical switch of the card holding it carry into it.
 
 Use a panel when the map is one view among several (where the fires are, next to charts of what burned).
 Use a standalone map page (maps.md) when the map is the main thing or is heavy (more than a few MB of

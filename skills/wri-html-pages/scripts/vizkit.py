@@ -189,7 +189,11 @@ p{max-width:75ch}
 .muted{color:var(--ink-2)} .faint{color:var(--ink-3)} .num{font-variant-numeric:tabular-nums}
 .nw{white-space:nowrap}
 .tech{display:none}
-html[data-lang="tech"] .tech{display:revert} html[data-lang="tech"] .plain{display:none}
+.langseg{float:right;display:inline-flex;margin:0 0 6px 12px;border:1px solid var(--line-2);border-radius:999px;overflow:hidden;position:relative;z-index:1}
+header .btns .langseg{float:none;margin:0}
+.langseg button{font:500 12px var(--f-sans);border:0;background:var(--surface);color:var(--ink-3);padding:4px 10px;cursor:pointer}
+.langseg button[aria-pressed="true"]{background:var(--ink-2);color:var(--surface)}
+@media (max-width:560px){.langseg{float:none;display:flex;width:fit-content;margin:0 0 8px auto}}
 .btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .ax-y{font-size:12.5px;color:var(--ink-2);margin:8px 0 6px;width:fit-content}
 .ax-x{font-size:12.5px;color:var(--ink-2);margin:6px auto 0;width:fit-content}
@@ -377,9 +381,13 @@ TIP_JS = r"""
 (function(){
   const tip = document.getElementById('tip');
   let pinned = null;
-  const tech = () => document.documentElement.dataset.lang === 'tech';
+  // plain language / technical is chosen per panel: each chart card (and each note, section intro or page
+  // header) that has a technical version carries its own small switch; text follows its nearest panel
+  const SCOPE = '.card, .note, section.panel, section.sec, header';
+  const scopeOf = el => el.closest(SCOPE);
+  const tech = el => { const s = el && scopeOf(el); return !!s && s.dataset.lang === 'tech'; };
   function fill(el){ tip.textContent = ''; const parts = el.dataset.tip.split('\n@@tech\n');
-    const txt = (tech() && parts[1]) ? parts[1] : parts[0];
+    const txt = (tech(el) && parts[1]) ? parts[1] : parts[0];
     txt.split('\n').forEach((t, i) => { const n = document.createElement(i ? 'div' : 'b');
       if(i && t.startsWith('What it suggests: ')){ n.className = 'mean'; }
       n.textContent = t; tip.appendChild(n); }); }
@@ -408,16 +416,29 @@ TIP_JS = r"""
     const vb = svg.viewBox.baseVal.width, w = svg.getBoundingClientRect().width || vb;
     svg.style.setProperty('--k', Math.min(1.4, Math.max(1, vb / w)).toFixed(3)); }); }
   fitText(); addEventListener('resize', fitText);
-  // map panels follow the page's light / dark and plain / technical switches
-  function syncFrames(){ const r = document.documentElement, msg = {};
-    if(r.dataset.theme) msg.theme = r.dataset.theme; msg.lang = r.dataset.lang || 'plain';
-    document.querySelectorAll('iframe.mapframe').forEach(f => { try { f.contentWindow.postMessage(msg, '*'); } catch(e){} }); }
-  // plain language / technical switch (shown only on pages that have both versions); remembered per reader
-  const lb = document.getElementById('langbtn');
-  function setLang(l){ document.documentElement.dataset.lang = l; if(lb){ lb.textContent = l === 'tech' ? 'Technical' : 'Plain language';
-    lb.setAttribute('aria-pressed', String(l === 'tech')); } hide(); syncFrames(); try { localStorage.setItem('vk_lang', l); } catch(e){} }
-  if(lb){ let l0 = 'plain'; try { l0 = localStorage.getItem('vk_lang') || 'plain'; } catch(e){}
-    setLang(l0); lb.addEventListener('click', () => setLang(tech() ? 'plain' : 'tech')); }
+  // map panels follow the page's light / dark switch and their own panel's plain / technical switch
+  function syncFrames(){ const r = document.documentElement;
+    document.querySelectorAll('iframe.mapframe').forEach(f => { const msg = {lang: tech(f) ? 'tech' : 'plain'};
+      if(r.dataset.theme) msg.theme = r.dataset.theme;
+      try { f.contentWindow.postMessage(msg, '*'); } catch(e){} }); }
+  function setLang(sc, l){ sc.dataset.lang = l;
+    sc.querySelectorAll('.tech, .plain').forEach(e => { if(scopeOf(e) !== sc) return;
+      const isT = e.classList.contains('tech'), on = isT ? l === 'tech' : l !== 'tech';
+      e.style.display = on ? (isT ? 'revert' : '') : 'none'; });
+    sc.querySelectorAll(':scope .langseg button').forEach(b => { if(scopeOf(b) === sc) b.setAttribute('aria-pressed', String(b.dataset.l === l)); });
+    hide(); syncFrames(); }
+  const scopes = new Set();
+  document.querySelectorAll('.tech').forEach(e => { const s = scopeOf(e); if(s) scopes.add(s); });
+  document.querySelectorAll('[data-tip]').forEach(e => { if(e.dataset.tip.indexOf('\n@@tech\n') >= 0){ const s = scopeOf(e); if(s) scopes.add(s); } });
+  scopes.forEach(sc => {
+    const seg = document.createElement('div'); seg.className = 'langseg'; seg.setAttribute('role', 'group');
+    seg.setAttribute('aria-label', 'Explanations in this panel');
+    [['plain', 'Plain'], ['tech', 'Technical']].forEach(([l, t]) => { const b = document.createElement('button');
+      b.type = 'button'; b.dataset.l = l; b.textContent = t;
+      b.addEventListener('click', e => { e.stopPropagation(); setLang(sc, l); }); seg.appendChild(b); });
+    const btns = sc.matches('header') && sc.querySelector('.btns');
+    if(btns) btns.prepend(seg); else sc.prepend(seg);
+    setLang(sc, 'plain'); });
   document.querySelectorAll('iframe.mapframe').forEach(f => f.addEventListener('load', syncFrames));
   const tb = document.getElementById('themebtn');
   if(tb) tb.addEventListener('click', () => { const r = document.documentElement;
@@ -552,10 +573,6 @@ def page(title: str, body: str, *, subtitle: str = "", eyebrow: str = "", lede: 
     src = "".join(f"<li>{s}</li>" for s in sources)
     robots = '<meta name="robots" content="noindex,nofollow">' if noindex else ""
     toggle = '<button type="button" class="themebtn" id="themebtn" aria-label="Switch light or dark">Light / dark</button>' if theme_toggle else ""
-    has_tech = any(('class="tech"' in x) or (TECH_MARK in x) for x in (body, tiles, how_to_read, subtitle, lede))
-    if has_tech:
-        toggle = ('<button type="button" class="themebtn" id="langbtn" aria-pressed="false" '
-                  'aria-label="Switch between plain-language and technical explanations">Plain language</button>') + toggle
     return f"""<!doctype html>
 <!-- Generated {gen_txt} ({gen_iso}) -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">

@@ -9,8 +9,8 @@ judged rather than pattern-matched.
 The archetypes show these rules applied (built from open ecological data, so they can be shared with anyone);
 open them before building something new:
 - Map: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/map-archetype-penguin-records-around-palmer-station-2026-10-13.html
-- Charts: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-13.html
-- A page built over several requests: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/exploration-archetype-palmer-penguins-built-step-step-2026-10-13.html
+- Charts: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-15.html
+- A page built over several requests: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/exploration-archetype-palmer-penguins-built-step-step-2026-10-15.html
 
 ## Titles, subtitles and links (Carlo, 2026-10-12)
 
@@ -88,8 +88,13 @@ but a title that holds every detail is too much to read. So:
 - **Plain language first, technical on a switch.** Plain tips and captions say what a value means and
   **suggest an interpretation** ("What it suggests: not clearly different from the other states").
   Where a reader may want the method (intervals, estimators, definitions, fields), add a technical
-  version; the page then shows a **Plain language / Technical** switch (vizkit `tip(meaning=, tech=)`,
-  `dual(plain, technical)`; maps: `*_tech` spec fields). Use judgement: not every tip needs both.
+  version (vizkit `tip(meaning=, tech=)`, `dual(plain, technical)`; maps: `*_tech` spec fields). Use
+  judgement: not every tip needs both.
+- **The switch is per panel, not per page** (Carlo, 2026-10-15: "the plain language toggle is associated
+  with each data visualization panel ... as opposed to the whole thing"). Every chart card that has a
+  technical version carries its own small **Plain | Technical** switch in its top-right corner; it changes
+  that panel's caption, hovers, checks and any map inside it, and nothing else. Notes, section intros and
+  the page header get their own switch when they have technical text. Every panel opens in Plain.
 - **Hover tips add information or don't exist.** A tip that repeats the label under it is noise
   (Carlo: "if there's no useful additional information … don't put it"). Good tips: the exact count
   and base, how a number was calculated, the cut behind a cohort, what a category means.
