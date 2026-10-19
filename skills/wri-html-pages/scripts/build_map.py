@@ -45,7 +45,7 @@ from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from vizkit import brand_strip, built_at, byline, generated_iso, slug  # noqa: E402  (shared with chart pages)
+from vizkit import brand_strip, built_at, byline, generated_iso, head_icon_tags, slug  # noqa: E402  (shared with chart pages)
 
 # ============================================================================ settings
 HERE = Path(__file__).resolve().parent
@@ -229,6 +229,7 @@ def build_page(spec: dict, base: Path, *, embed: bool = False, sidecar_dir: Path
                 .replace("__DESCRIPTION__", html.escape(plain_desc, quote=True))
                 .replace("__GENERATED_COMMENT__", f"Generated {gen_txt} ({gen_iso})")
                 .replace("__GENERATED__", gen_iso)
+                .replace("__ICON_TAGS__", head_icon_tags(plain_title, plain_desc))
                 .replace("__ROBOTS__", '<meta name="robots" content="noindex,nofollow">' if spec.get("noindex") else "")
                 .replace("__CONFIG__", json.dumps(cfg, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/"))
                 .replace("__DATA__", "\n".join(data_blocks)))

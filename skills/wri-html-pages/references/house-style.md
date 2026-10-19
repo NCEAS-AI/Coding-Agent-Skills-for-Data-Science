@@ -154,6 +154,13 @@ but a title that holds every detail is too much to read. So:
   else the bundled `references/identity.json`); a page can name another author.
 - **Logo strip at the foot:** the NCEAS and WRI (Wildfire Resilience Index) logos, each linking to its
   website, plus the WRI-Science GitHub links. vizkit and build_map add both automatically.
+- **Flame icon and link preview:** every page uses the WRI flame (the wildfireindex.org favicon, just the
+  flame, no hexagon border) as its browser-tab icon, and as the preview image when the link is pasted into
+  Slack, email or social media (Open Graph and Twitter tags with the page title and subtitle). The icon is
+  inline; the preview image must be a public URL, so it is hosted on the pages site
+  (`site_assets/wri-flame-preview.png`, set in identity.json `page_icon`). PIN-gated pages show the flame
+  but not the title or subtitle. vizkit, build_map and pin_gate add these automatically; check_page warns
+  when they are missing.
 
 ## Every page ends with
 

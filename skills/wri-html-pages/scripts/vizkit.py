@@ -91,6 +91,31 @@ def _logo(org: dict) -> str:
     return f'<img class="logo" alt="{esc(org["short"])} logo" src="data:{mime};base64,{base64.b64encode(f.read_bytes()).decode()}">'
 
 
+def head_icon_tags(title: str = "", description: str = "") -> str:
+    """<head> tags for the browser-tab icon (inline, so the page stays one file) and the link preview that Slack,
+    email and social sites show (Open Graph + Twitter card). Preview images must be a public absolute URL, so
+    the flame is hosted on the pages site (identity.json page_icon.preview_url). Empty when identity has no page_icon."""
+    import base64
+    ic = load_identity().get("page_icon") or {}
+    tags = []
+    if ic.get("favicon"):
+        f = identity_path().parent / ic["favicon"]
+        if not f.is_file():
+            f = _SKILL / "assets" / ic["favicon"]
+        tags.append(f'<link rel="icon" type="image/png" href="data:image/png;base64,{base64.b64encode(f.read_bytes()).decode()}">')
+    if ic.get("preview_url"):
+        q = lambda s: esc(s, quote=True)                                      # noqa: E731
+        tags += ['<meta property="og:type" content="website">',
+                 f'<meta property="og:site_name" content="{q(ic.get("site_name", ""))}">' if ic.get("site_name") else "",
+                 f'<meta property="og:title" content="{q(title)}">' if title else "",
+                 f'<meta property="og:description" content="{q(description)}">' if description else "",
+                 f'<meta property="og:image" content="{q(ic["preview_url"])}">',
+                 f'<meta property="og:image:alt" content="{q(ic.get("preview_alt", ""))}">',
+                 '<meta name="twitter:card" content="summary">',              # small square thumbnail suits a logo
+                 f'<meta name="twitter:image" content="{q(ic["preview_url"])}">']
+    return "\n" + "\n".join(t for t in tags if t) if tags else ""
+
+
 def brand_strip() -> str:
     """Linked NCEAS and WRI logos plus the WRI GitHub links (inline, so the page stays one file)."""
     idt = load_identity()
@@ -578,7 +603,7 @@ def page(title: str, body: str, *, subtitle: str = "", eyebrow: str = "", lede: 
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(title)}</title>{robots}
 <meta name="description" content="{esc(plain_sub, quote=True)}">
-<meta name="generated" content="{gen_iso}">{extra_head}
+<meta name="generated" content="{gen_iso}">{head_icon_tags(__import__("re").sub(r"<[^>]+>", "", title), plain_sub)}{extra_head}
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="{FONTS}">
 <style>{CSS}</style></head>

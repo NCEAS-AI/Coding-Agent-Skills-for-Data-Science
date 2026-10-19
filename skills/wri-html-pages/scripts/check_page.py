@@ -102,6 +102,10 @@ def check(path: Path, site_dirs=(), forbid=()) -> list[tuple[str, str]]:
             warn(f"<title> is {len(t)} characters; keep it short and put the detail in the subtitle")
         if 'name="generated"' not in html:
             warn('no <meta name="generated"> recording when the file was built')
+        if 'rel="icon"' not in html:
+            warn("no browser-tab icon (the WRI flame); build with vizkit or build_map, which add it")
+        if 'property="og:image"' not in html:
+            warn("no link-preview image (og:image): Slack and email show no flame; build with vizkit or build_map")
     if not p.viewport:
         err('no <meta name="viewport">: the page will not lay out on a phone')
     for m in sorted(set(LOCAL_PATH.findall(html)))[:5]:

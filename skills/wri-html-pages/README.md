@@ -62,13 +62,17 @@ every map") and it updates these files and rebuilds the archetypes.
 
 ## License
 
-Code and text: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/), public domain. The two
-logos are not covered: `assets/nceas-logo.svg` is the logo of the National Center for Ecological Analysis
-and Synthesis and `assets/wri-logo.png` that of the Wildfire Resilience Index, used here for their own
+Code and text: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/), public domain. The logos are
+not covered: `assets/nceas-logo.svg` is the logo of the National Center for Ecological Analysis
+and Synthesis and `assets/wri-logo.png` that of the Wildfire Resilience Index, and `assets/wri-flame-icon.png` and `wri-flame-preview.png` are its
+flame (from wildfireindex.org), used here for their own
 pages. Another team replaces them with its own logos (set in its identity.json).
 
 ## Version history
 
+- 1.9.0 (2026-10-19): every page carries the WRI flame as its browser-tab icon and as the link-preview image
+  in Slack, email and social media (Open Graph / Twitter tags with the title and subtitle). Set in identity.json
+  `page_icon`; the preview image is hosted at `site_assets/` on the pages site. Gated pages show only the flame.
 - 1.7.0 (2026-10-13): published in NCEAS-AI/Coding-Agent-Skills-for-Data-Science, ready for other teams.
   - Example pages use open ecological data anyone can download (Palmer Penguins; GBIF penguin records around
     Palmer Station; the SCAR gazetteer), fetched and cached by `examples/penguin_data.py`, not wildfire data.

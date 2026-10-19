@@ -125,7 +125,10 @@ def gate(plain: str, pin: str) -> str:
     iv = secrets.token_bytes(12)
     ct = AESGCM(k).encrypt(iv, plain.encode("utf-8"), None)
     b = lambda x: base64.b64encode(x).decode()
-    return HEAD + f'var S="{SITE_SALT_B64}", I="{b(iv)}", C="{b(ct)}", N={ITERATIONS};' + TAIL
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from vizkit import head_icon_tags      # flame icon + link-preview image only: no title or description leaks out
+    head = HEAD.replace("<title>Protected page</title>", "<title>Protected page</title>" + head_icon_tags(), 1)
+    return head + f'var S="{SITE_SALT_B64}", I="{b(iv)}", C="{b(ct)}", N={ITERATIONS};' + TAIL
 
 
 def ungate(gated: str, pin: str) -> str:

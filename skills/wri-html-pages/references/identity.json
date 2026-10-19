@@ -8,6 +8,11 @@
      "logo": "nceas-logo.svg", "logo_follows_text_colour": true},
     {"short": "WRI", "name": "Wildfire Resilience Index", "url": "https://wildfireindex.org/", "logo": "wri-logo.png"}
   ],
+  "page_icon": {"_why": "Every page carries the WRI flame (the wildfireindex.org favicon, no hexagon border) as its browser-tab icon and as the preview image when its link is pasted into Slack, email or social media. Previews need a public absolute URL, so the image is hosted on the pages site.",
+                "favicon": "wri-flame-icon.png",
+                "preview_url": "https://wri-science.github.io/public_publication/publication_htmls/site_assets/wri-flame-preview.png",
+                "preview_alt": "Wildfire Resilience Index flame",
+                "site_name": "Wildfire Resilience Index · NCEAS"},
   "github": {"label": "WRI-Science on GitHub", "url": "https://github.com/WRI-Science",
              "pages_repo": "https://github.com/WRI-Science/public_publication"}
 }

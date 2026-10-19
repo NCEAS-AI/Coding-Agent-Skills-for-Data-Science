@@ -4,14 +4,14 @@ description: "Make every data visualization as an HTML page in the WRI / NCEAS h
 license: CC0-1.0 for code and text; the NCEAS and WRI logos in assets/ are not covered (see README.md)
 compatibility: Python 3.10+ and git with push access to a GitHub Pages repo (set in references/identity.json). Screenshots need Chrome or Chromium and websocket-client; maps from vector or raster files need geopandas or rasterio; the optional PIN gate needs cryptography. Map tiles and libraries load from the internet.
 metadata:
-  version: "1.7.0"
+  version: "1.9.0"
   author: "Carlo Broderick (NCEAS, UC Santa Barbara)"
   source: "https://github.com/NCEAS-AI/Coding-Agent-Skills-for-Data-Science"
 ---
 
 # wri-html-pages: maps and chart pages in our house style, published by link
 
-Version 1.8.0 (2026-10-15). Every page made with this skill looks and behaves the same way, works on
+Version 1.9.0 (2026-10-19). Every page made with this skill looks and behaves the same way, works on
 a phone and a desktop, carries a short dated title with a detailed subtitle, says who made it and when,
 and ends up at a link collaborators can open.
 
@@ -86,7 +86,7 @@ to its live, newest version**, unasked, so the user never has to ask for the lin
    (place, dates, cohort and counts, split, what is new in this iteration). The title's slug is the file name.
 3. **Add to the current page** (living_page) unless this is a new analysis; then **build** with the scripts: maps with `scripts/build_map.py` from a JSON spec, charts with
    `scripts/vizkit.py`. Both add the byline (author, Pacific build time), the NCEAS / WRI logos and
-   GitHub links, and record the generation time in the file.
+   GitHub links, the WRI flame as tab icon and link-preview image, and record the generation time in the file.
 4. **Rigor pass, panel by panel** (`references/rigor.md`): like-for-like periods and populations (no partial
    year next to full ones), right denominators, heavy tails and single-event dominance, uncertainty from the
    independent unit, small n, how the data were made, honest encoding, claims that match the evidence.
