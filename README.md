@@ -34,7 +34,8 @@ before you write anything.
 
 Prefer to do it by hand? [`agent-setup/SETUP.md`](agent-setup/SETUP.md) reads fine on its own. Or copy a
 skill folder from [`skills/`](skills/) into your tool's skills folder (table below), or upload
-[`dist/wri-html-pages.skill`](dist/wri-html-pages.skill) to claude.ai.
+[`dist/wri-html-pages.skill`](dist/wri-html-pages.skill) (and [`dist/wri-html-decks.skill`](dist/wri-html-decks.skill))
+to claude.ai.
 
 ## The skills
 
@@ -79,6 +80,37 @@ The skill's own guide is [`skills/wri-html-pages/README.md`](skills/wri-html-pag
 agent reads is [`SKILL.md`](skills/wri-html-pages/SKILL.md) and the
 [`references/`](skills/wri-html-pages/references/) it points to.
 
+### `wri-html-decks`: presentations as HTML slide decks, published by link
+
+Ask for a presentation ("make a deck on the validation results for Monday", "add a slide with the new
+numbers", "give the map slide tabs for the three sites") and the agent builds one HTML deck in the same house
+style, renders and checks every slide, publishes it to your GitHub Pages site next to your maps and charts, and
+gives you the link. It is made from the team's best-received deck (a 74-slide wildfire structure-loss deck,
+Sept–Oct 2026) and the feedback on it, and needs `wri-html-pages` installed beside it.
+
+[![Deck archetype: four slides](docs/img/deck.jpg)](https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/deck-archetype-palmer-penguins-species-sex-island-2026-10-23.html)
+
+[Open the live deck](https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/deck-archetype-palmer-penguins-species-sex-island-2026-10-23.html) (arrow keys to move, hover over anything).
+
+What every deck gets, without being asked:
+
+- **Real 16:9 slides** that scale to any screen, with keys, swipe, full screen and a PDF button.
+- **A progress strip at the top of every slide,** grouped into the deck's sections in their own colours:
+  what you've seen, where you are, what's left.
+- **One idea per slide,** shown rather than written: headline numbers, unit grids, numbered steps, bracket
+  flowcharts, cards in their concept's colour, statement slides.
+- **Charts and maps drawn for the slide:** bars, columns, lines, intervals, scatter, time spans, class scales,
+  shaded tables; maps as still pictures with tabs and layer toggles plus a link to the interactive map.
+- **Hover tips on every part, with a highlight and no cursor change,** an (i) note on every slide, and a Plain |
+  Technical switch where there is technical detail.
+- **One link, kept up to date,** with the deck's change history in its Contents panel; two languages in one
+  deck when needed.
+- **Every slide checked** in headless Chrome for overflow, squeezed charts, overlapping text, dense slides and
+  numbers without a hover.
+
+Its guide is [`skills/wri-html-decks/README.md`](skills/wri-html-decks/README.md); the agent reads
+[`SKILL.md`](skills/wri-html-decks/SKILL.md) and [`references/`](skills/wri-html-decks/references/).
+
 ## What are skills? (Read this: unlike rules, skills include code)
 
 A skill is a folder with a `SKILL.md` file: a name, a one-paragraph description of when to use it, and
@@ -88,7 +120,8 @@ many tools.
 
 **Unlike the rules repo, these skills include scripts that your agent will run.** `wri-html-pages` runs
 Python scripts that build HTML pages, start a headless Chrome to screenshot them, and `git push` pages to
-the GitHub Pages repo you choose. Nothing phones home. The scripts talk to GitHub (to publish a page and
+the GitHub Pages repo you choose; `wri-html-decks` builds decks, screenshots every slide the same way, downloads
+base-map tiles for still maps, and publishes with `wri-html-pages`. Nothing phones home. The scripts talk to GitHub (to publish a page and
 confirm it is live); the example scripts download their open data once (Palmer Penguins, GBIF, the SCAR
 gazetteer); and the pages, like any web map, load map tiles and JavaScript libraries from public servers
 when opened. Please read before
@@ -128,8 +161,9 @@ pages but cannot push them to GitHub.
 | Path | What it is |
 |---|---|
 | `agent-setup/SETUP.md` | The setup protocol the agent follows. Start here. |
-| `skills/wri-html-pages/` | The skill itself: `SKILL.md`, `references/`, `scripts/`, `assets/`, `examples/`, and a `README.md` for people. |
-| `dist/wri-html-pages.skill` | The same folder as a zip, for uploading to claude.ai or sending to someone. |
+| `skills/wri-html-pages/` | The page skill: `SKILL.md`, `references/`, `scripts/`, `assets/`, `examples/`, and a `README.md` for people. |
+| `skills/wri-html-decks/` | The deck skill, same layout (it uses `wri-html-pages` for settings and publishing). |
+| `dist/<name>.skill` | Each skill folder as a zip, for uploading to claude.ai or sending to someone. |
 | `docs/img/` | The screenshots above. |
 | `tools/skills.py` | Checks skills against the Agent Skills spec, packages them, and syncs a working copy into this repo. |
 | `CONTRIBUTING.md` | How to update a skill or add a new one. |
@@ -178,7 +212,7 @@ button from it, and a Zenodo DOI will appear at the top of this README once arch
 
 📋 **Copy-paste citation:**
 
-> Broderick, C. (2026). *Coding-Agent Skills for Data Science* (Version v1.0.0) [Software].
+> Broderick, C. (2026). *Coding-Agent Skills for Data Science* (Version v1.1.0) [Software].
 > https://github.com/NCEAS-AI/Coding-Agent-Skills-for-Data-Science
 
 ---

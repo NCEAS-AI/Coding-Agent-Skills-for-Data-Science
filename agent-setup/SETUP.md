@@ -52,12 +52,13 @@ setup whenever you want the latest. Your personal settings carry over.
   questions that are yours to answer."
 - **Ask me instead:** "Don't check anything; I'll tell you."
 
-**B. Which skill?** List the folders in `skills/` with the first line of each `README.md`. Today there is
-one, so propose it and confirm:
+**B. Which skills?** List the folders in `skills/` with the first line of each `README.md`, propose both and
+confirm (`wri-html-decks` needs `wri-html-pages` installed in the same skills folder):
 
 | Skill | What it does |
 |---|---|
 | `wri-html-pages` | Turns any data-visualization request into an interactive HTML page (maps, charts, tables) in a house style, checks it for statistical rigor and on a phone, publishes it to a GitHub Pages site, and links it. |
+| `wri-html-decks` | Turns any request for a presentation into an HTML slide deck in the same style (sectioned progress strip, one idea per slide, charts and still maps drawn for the slide, hover tips), checks every slide, publishes it with `wri-html-pages`, and links it. |
 
 ---
 
@@ -114,11 +115,16 @@ For `wri-html-pages`:
 Screenshots are how the agent checks every page on a desktop and a phone; without Chrome the skill
 still builds and publishes pages but can't look at them, so say so plainly.
 
+For `wri-html-decks`: everything above (it uses `wri-html-pages` to publish), plus `Pillow` for still maps
+(already in the table) and internet access for base-map tiles. Its slide checks need Chrome and
+`websocket-client`, like the page screenshots.
+
 ---
 
 ## Phase 3: Ask the user
 
-Ask in order, one at a time, skipping what earlier answers settle.
+Ask in order, one at a time, skipping what earlier answers settle. `wri-html-decks` has no questions of its
+own: it uses the answers below (the same identity.json and site).
 
 1. **Which team's site do you publish to?**
    **[The WRI team: `WRI-Science/public_publication`]** / another team's or your own GitHub Pages site.
@@ -167,7 +173,11 @@ Build this, show it all, get a yes, then write it.
 4. **claude.ai:** there is no settings folder there, so build a personal zip instead: copy the skill
    folder, put the personal settings into its `references/identity.json` (and logos into `assets/`),
    zip the folder (top folder `<name>/`), name it `<name>.skill`, and give the user that file to upload.
-5. Add a short note in the identity file's `_why`: installed from
+5. **`wri-html-decks`:** copy `skills/wri-html-decks/` into the **same** skills folder as `wri-html-pages`
+   (it finds the page skill there; elsewhere, set `DECK_PAGES_SKILL=/path/to/wri-html-pages`). If the user chose
+   ask-before-publishing, make the same edit in its `SKILL.md` section "Automatic: every deck is built, checked,
+   published and linked".
+6. Add a short note in the identity file's `_why`: installed from
    `NCEAS-AI/Coding-Agent-Skills-for-Data-Science` on `<date>`, version `<metadata.version from SKILL.md>`.
 
 ---
@@ -186,14 +196,20 @@ Run, from the installed skill folder (call it `SKILL`), telling the user what ea
 3. **Publishing access** (without publishing anything): clone the pages repo shallowly into a temporary
    folder and run `git push --dry-run origin HEAD:refs/heads/access-check` there. Success means they can
    publish; nothing is pushed. Delete the temporary folder.
-4. **The tool sees the skill:** ask the user to start a new session and ask the agent "what skills do
-   you have?" (or open the tool's skills panel). `wri-html-pages` should be listed.
+4. **Decks** *(if installed)*: `python3 -c "import sys; sys.path.insert(0, 'DECKS/scripts'); import deckkit; print(deckkit.PAGES)"`
+   (with `DECKS` the installed `wri-html-decks` folder) must print the page skill's folder; then
+   `python3 DECKS/scripts/shoot_deck.py https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/deck-archetype-palmer-penguins-species-sex-island-2026-10-23.html /tmp/deck-test --slides 1-3`
+   should write three slide pictures and report no errors.
+5. **The tool sees the skills:** ask the user to start a new session and ask the agent "what skills do
+   you have?" (or open the tool's skills panel). `wri-html-pages` (and `wri-html-decks`) should be listed.
 
 Then tell the user plainly:
 - **What** you installed, **where**, and where their personal settings are.
 - **How to use it:** just ask for any chart, map or table of their data, e.g. *"map these sites"*,
   *"chart body mass by species"*, *"add a panel with the yearly totals"*. The agent builds, checks,
-  publishes and links the page; later requests add panels to the same page.
+  publishes and links the page; later requests add panels to the same page. For a talk, ask for a deck
+  (*"make a deck of these results for Monday"*, *"add a slide on the new site"*); later requests update the
+  same deck and link.
 - **How to change the house style:** tell the agent ("make the dots bigger on every map"); it
   edits the skill's references and templates.
 - **How to update:** re-run this setup (or `git pull` if linked). Personal settings carry over.
