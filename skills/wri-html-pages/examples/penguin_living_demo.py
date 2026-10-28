@@ -11,7 +11,7 @@ WHY THIS EXISTS
 
 RUN (needs pandas and numpy)
     python3 penguin_living_demo.py OUT_DIR
-    -> OUT_DIR/<dated title slug>.html
+    -> OUT_DIR/<dated title slug>.html, plus panels/<same name>/: one page per panel (Full screen / Copy link)
 """
 from __future__ import annotations
 
@@ -87,7 +87,7 @@ html = vk.living_page(None, title=title,
                                "(CC0 1.0)."],
                       footer="Made with the wri-html-pages skill: examples/penguin_living_demo.py.",
                       add=[p_seasons, p_island])
-page_path.write_text(html)
+vk.write_page(page_path, html)
 time.sleep(2)
 
 # ---------------- step 2: a later request adds a panel; it goes on top
@@ -110,7 +110,7 @@ p_species = vk.panel(
                     f"Means with 95% percentile bootstrap intervals, {BOOT} resamples within species × sex."),
     checks=["Within a species and sex each bird is from a different nest, so birds are independent.",
             f"{len(m) - len(sexed)} birds of unknown sex left out."])
-page_path.write_text(vk.living_page(page_path, add=[p_species]))
+vk.write_page(page_path, vk.living_page(page_path, add=[p_species]))
 time.sleep(2)
 
 # ---------------- step 3: replace the misleading island panel with island comparisons within one species
@@ -133,7 +133,7 @@ p_within = vk.panel(
                     f"Adélie means by island with 95% bootstrap intervals; max − min = {spread * 1000:.0f} g."),
     checks=["Like for like: one species (Adélie, the only one on all three islands).",
             "Bootstrap intervals over birds; bars start at zero; same axis as the panel above."])
-page_path.write_text(vk.living_page(page_path, add=[p_within], remove={
+vk.write_page(page_path, vk.living_page(page_path, add=[p_within], remove={
     "mass-by-island": "it compared species, not islands: Gentoo, the heaviest, were measured only on Biscoe; replaced by "
                       "'Body mass by island, within one species'"}))
 print("wrote", page_path)

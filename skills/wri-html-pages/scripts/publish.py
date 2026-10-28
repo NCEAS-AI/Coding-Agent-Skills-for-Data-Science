@@ -14,6 +14,13 @@ WHAT IT DOES (dry run by default; --execute to write, commit and push)
     1. Keeps its own sparse clone (default ~/.cache/<repo name>; env PUBREPO overrides) and
        fast-forwards it to origin/main. Only the files being published and the READMEs are checked
        out, so a folder of 1 GB of maps costs nothing to publish into.
+    1b. Finds the panel pages a chart page links with data-companion (panels/<page file stem>/*.html, written by
+       vk.write_page: one per chart card, plus each map's own page) and publishes them with it. They are checked like
+       any page (and must carry the same build id as the link), take the access of the page that links them (a gated
+       page gets gated panel pages; panel pages on the site but not in your folder STOP the publish when they would end up
+       less private than their page), are exempt from the dated-name rule, and are not listed in the READMEs or the links
+       log. A page that links panel pages cannot be renamed with FILE:NEW_NAME. --pull fetches the panel pages with the page;
+       --remove PAGE.html takes the panel pages in its own panels/<file stem>/ folder with it.
     2. Pages are OPEN by default (Carlo, 2026-10-12: "default non-PIN-gated unless I specifically ask").
        --gate encrypts this call's pages behind the site PIN, only when the user asked. A page that is
        already PIN-gated on the site stays gated when updated, unless --open is passed.
@@ -28,7 +35,7 @@ WHAT IT DOES (dry run by default; --execute to write, commit and push)
 
 USAGE
     python publish.py --links [--folder FOLDER]           # latest live link per page, newest first
-    python publish.py --pull FILE.html --folder FOLDER [--to PATH]   # current published page, as plaintext, to keep building on
+    python publish.py --pull FILE.html --folder FOLDER [--to PATH]   # current published page, as plaintext, plus its panel pages, to keep building on
     python publish.py --folder FOLDER [--subdir maps] [--gate | --open] [--describe "One line"]
                       [-m "Title: what a reader now sees"] [--execute] [--wait] [--remove OLD.html ...]
                       FILE[:NEW_NAME] [FILE[:NEW_NAME] ...]
@@ -44,6 +51,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.request
 from pathlib import Path
@@ -131,22 +139,41 @@ def access_of(folder_rel: str, dest: Path):
 
 
 def pull_page(folder: str, sub: str, name: str, to: Path | None):
-    """Fetch the published page as it is on GitHub now (the living page to keep adding to)."""
-    rel = f"{ROOT}/{folder}/{sub + '/' if sub else ''}{name}"
+    """Fetch the published page as it is on GitHub now (the living page to keep adding to), with its panel pages
+    (panels/<page-slug>/...) beside it, so a rebuild with vk.write_page sees what is already published."""
+    base = f"{ROOT}/{folder}/{sub + '/' if sub else ''}"
+    rel = f"{base}{name}"
     sync_clone(["/README.md", f"/{ROOT}/README.md", f"/{rel}"])
     if not (CLONE / rel).exists():
         die(f"{rel} is not published")
-    txt = (CLONE / rel).read_text(encoding="utf-8")
-    if "<!-- pin-gated" in txt[:200]:
-        pin = os.environ.get("SLP_PIN")
-        if not pin:
-            die("that page is PIN-gated: set SLP_PIN to pull its plaintext")
-        import pin_gate
-        txt = pin_gate.ungate(txt, pin)
+    pin = os.environ.get("SLP_PIN")
+
+    def plain(txt: str) -> str:
+        if "<!-- pin-gated" in txt[:200]:
+            if not pin:
+                die("that page is PIN-gated: set SLP_PIN to pull its plaintext")
+            import pin_gate
+            try:
+                return pin_gate.ungate(txt, pin)
+            except Exception:
+                die("SLP_PIN does not open that page (wrong PIN?)")
+        return txt
+    txt = plain((CLONE / rel).read_text(encoding="utf-8"))
+    comps = [c for c in dict.fromkeys(re.findall(r'data-companion="([^"]+)"', txt))
+             if re.fullmatch(r"panels/[A-Za-z0-9_-][A-Za-z0-9._-]*/[A-Za-z0-9_-][A-Za-z0-9._-]*\.html", c)]
+    if comps:
+        sync_clone(["/README.md", f"/{ROOT}/README.md", f"/{rel}"] + [f"/{base}{c}" for c in comps])
     out = (to or Path(name)).resolve()
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(txt, encoding="utf-8")
-    print(f"publish: pulled {rel} -> {out}")
+    got = 0
+    for c in comps:
+        f = CLONE / base / c
+        if f.exists():
+            (out.parent / c).parent.mkdir(parents=True, exist_ok=True)
+            (out.parent / c).write_text(plain(f.read_text(encoding="utf-8")), encoding="utf-8")
+            got += 1
+    print(f"publish: pulled {rel} -> {out}" + (f" and {got} panel page(s) (panels/...)" if comps else ""))
 
 
 def show_links(folder: str | None):
@@ -165,6 +192,18 @@ def show_links(folder: str | None):
         print(f"{when[:16]}  {fold}{'  (PIN-gated)' if acc == 'gated' else ''}\n[{title or _name}]({link})")
 
 
+def pin_gate_ungate_or_empty(txt: str) -> str:
+    """The plaintext of a gated page when SLP_PIN is set (and right), else ''."""
+    pin = os.environ.get("SLP_PIN")
+    if not pin:
+        return ""
+    import pin_gate
+    try:
+        return pin_gate.ungate(txt, pin)
+    except Exception:
+        return ""
+
+
 def title_of(html: str) -> str:
     m = re.search(r"<title>(.*?)</title>", html, re.S | re.I)
     return re.sub(r"\s+", " ", m.group(1)).strip() if m else ""
@@ -180,7 +219,7 @@ def main():
     ap.add_argument("files", nargs="*")
     ap.add_argument("--folder", help="folder under publication_htmls/, snake_case")
     ap.add_argument("--links", action="store_true", help="print the latest live link per page (from the log) and stop")
-    ap.add_argument("--pull", metavar="FILE", help="write the current published FILE (ungated if needed) to --to and stop")
+    ap.add_argument("--pull", metavar="FILE", help="write the current published FILE and its panel pages (ungated if needed) to --to and stop")
     ap.add_argument("--to", type=Path, help="where --pull writes (default: ./FILE)")
     ap.add_argument("--subdir", default="")
     g = ap.add_mutually_exclusive_group()
@@ -188,7 +227,7 @@ def main():
     g.add_argument("--open", action="store_true", help="publish open even where the page was PIN-gated before")
     ap.add_argument("--describe", default="", help="one line for a NEW folder (both READMEs)")
     ap.add_argument("-m", "--message", action="append", default=[])
-    ap.add_argument("--remove", action="append", default=[], help="published file name to delete (explicit)")
+    ap.add_argument("--remove", action="append", default=[], help="published file name to delete (explicit); a page's own panels/<file stem>/ pages go with it; repeat for more")
     ap.add_argument("--no-readme", action="store_true", help="leave the READMEs alone (only for folders that have none by choice)")
     ap.add_argument("--keep-name", action="store_true", help="skip the dated-name rule (legacy pages only)")
     ap.add_argument("--execute", action="store_true")
@@ -220,6 +259,48 @@ def main():
         if re.search(r"[^A-Za-z0-9._-]", name):
             die(f"{name}: use letters, digits, '.', '_' and '-' only in published names (they become URLs)")
         items.append((src, name))
+    # ---- a chart page's panel pages and map pages (vizkit marks each link with data-companion; they live in
+    #      panels/<page-slug>/ beside the page) go out with it
+    have = {n for _, n in items}
+    parent_of: dict[str, set] = {}                      # panel page -> the page(s) that link it
+    comps_of: dict[str, list] = {}                      # page -> every panel page it links (local or already on the site)
+    builds_of: dict[str, str] = {}                      # panel page -> the build id its link carries
+    for src, name in list(items):
+        if name.endswith(".html"):
+            txt = src.read_text(errors="ignore")
+            if "<!-- pin-gated" in txt[:200]:                 # a gated page hides its panel links: read the plaintext
+                pin_ = os.environ.get("SLP_PIN")
+                if not pin_:
+                    die(f"{src.name} is already PIN-gated; set SLP_PIN so its panel pages can be found and published with it")
+                import pin_gate
+                try:
+                    txt = pin_gate.ungate(txt, pin_)
+                except Exception:
+                    die(f"SLP_PIN does not open {src.name} (wrong PIN?)")
+            comps = list(dict.fromkeys(re.findall(r'data-companion="([^"]+)"', txt)))
+            if comps and name != src.name:
+                die(f"{src.name}: this page links panel pages whose back links name it; build it under the new name "
+                    f"({name}) with vk.write_page instead of renaming it here")
+            comps_of[name] = comps
+            builds_of.update({c: b for c, b in re.findall(r'data-companion="([^"]+)"[^>]*?\sdata-build="([0-9a-f]+)"', txt)})
+            for comp in comps:
+                if re.search(r"@[0-9a-f]+-\d+@\.html", comp):
+                    die(f"{name}: its panel pages were never written (the links still hold placeholders): build the page with "
+                        "vk.write_page(dest, page), not dest.write_text(page)")
+                if (re.search(r"[^A-Za-z0-9._/-]", comp) or "//" in comp
+                        or not re.fullmatch(r"panels/[A-Za-z0-9_-][A-Za-z0-9._-]*/[A-Za-z0-9_-][A-Za-z0-9._-]*\.html", comp)):
+                    die(f"{name}: unsafe companion path {comp!r} (a panel page is panels/<page-slug>/<name>.html beside the page)")
+                cs = (src.parent / comp).resolve()
+                if not cs.is_relative_to(src.parent.resolve()):
+                    die(f"{name}: companion {comp!r} resolves outside the page's folder")
+                if comp not in have and cs.exists():
+                    items.append((cs, comp))
+                    have.add(comp)
+                if comp in have:
+                    parent_of.setdefault(comp, set()).add(name)
+    n_comp = sum("/" in n for _, n in items)
+    if n_comp:
+        print(f"publish: also publishing {n_comp} panel page(s) linked from the page(s) (panels/...)")
     if not items and not a.remove:
         die("nothing to publish")
     if a.keep_name and not a.execute:
@@ -232,11 +313,41 @@ def main():
     folder = CLONE / folder_rel
     existing = set(git("ls-tree", "-r", "--name-only", "origin/main", folder_rel + "/").splitlines())
     is_new = not existing
+    a.remove = list(dict.fromkeys(a.remove))
+    for n in a.remove:                                   # checked now, in a dry run too, before anything is written
+        if re.search(r"[^A-Za-z0-9._/-]", n) or ".." in n.split("/") or f"{dest_rel}/{n}" not in existing:
+            die(f"--remove {n}: not published in {dest_rel}")
+    extra_rm = []
+    for n in list(a.remove):                             # a page's panel pages (same data, same map) go with it
+        if n.endswith(".html") and "panels/" not in n:
+            d_, base_ = os.path.split(n)
+            site_txt = git("show", f"origin/main:{dest_rel}/{n}")
+            if "<!-- pin-gated" in site_txt[:200]:
+                site_txt = pin_gate_ungate_or_empty(site_txt)
+                if not site_txt:
+                    die(f"{n} is PIN-gated on the site: set SLP_PIN (the site PIN) so its panel pages can be found and removed with it")
+            own = f"{d_ + '/' if d_ else ''}panels/{base_[:-5]}/"     # the page's own folder; a panel page elsewhere may belong to another page
+            linked_ = set(re.findall(r'data-companion="([^"]+)"', site_txt))
+            linked_ = {(d_ + "/" if d_ else "") + c for c in linked_}
+            comps = {c for c in linked_ if c.startswith(own)} | {p[len(dest_rel) + 1:] for p in existing if p.startswith(f"{dest_rel}/{own}")}
+            elsewhere = sorted(c for c in linked_ if not c.startswith(own) and f"{dest_rel}/{c}" in existing)
+            if elsewhere:
+                print(f"publish: NOTE {n} links panel pages outside {own} ({len(elsewhere)}, e.g. {elsewhere[0]}); they are kept: "
+                      "remove them with --remove if they belong to this page only")
+            extra_rm += [c for c in sorted(comps) if f"{dest_rel}/{c}" in existing and c not in a.remove]
+    if extra_rm:
+        a.remove += extra_rm
+        print(f"publish: also removing {len(extra_rm)} panel page(s) of the page(s) being removed (panels/...)")
+        sync_clone(patterns + [f"/{dest_rel}/{n}" for n in extra_rm])
+    still_linked = {c for cs_ in comps_of.values() for c in cs_}
+    for n in a.remove:
+        if n in have or n in still_linked:
+            die(f"--remove {n}: a page published in this call still links it")
 
     # ---- access, page by page: open unless the user asked for the PIN gate (--gate); a page already
     #      gated on the site keeps its gate when updated unless --open says otherwise
     folder_acc = access_of(folder_rel, folder)
-    page_access, notes = {}, []
+    page_access, notes, kept_gated = {}, [], 0
     for _, n in items:
         rel = f"{dest_rel}/{n}"
         if not n.endswith(".html"):
@@ -247,11 +358,51 @@ def main():
             page_access[n] = "open"
         elif rel in existing and "<!-- pin-gated" in git("show", f"origin/main:{rel}")[:200]:
             page_access[n] = "gated"
-            notes.append(f"{n}: already PIN-gated on the site, kept gated (pass --open to make it public)")
+            if "/" in n:
+                kept_gated += 1
+            else:
+                notes.append(f"{n}: already PIN-gated on the site, kept gated (pass --open to make it public)")
         else:
             page_access[n] = "open"
-            if folder_acc in ("gated", "mixed"):
+            if folder_acc in ("gated", "mixed") and "/" not in n:
                 notes.append(f"{n}: OPEN (public). Other pages in {a.folder} are PIN-gated; pass --gate if this one should be too")
+    site_only = {c for n, cs_ in comps_of.items() for c in cs_ if c not in have and f"{dest_rel}/{c}" in existing}
+    for n, cs_ in comps_of.items():                       # panel pages that are on the site but not in the local folder
+        for c in cs_:
+            if c in site_only and page_access.get(n) == "gated" and \
+                    "<!-- pin-gated" not in git("show", f"origin/main:{dest_rel}/{c}")[:200]:
+                die(f"{c} is on the site OPEN but its page {n} is now PIN-gated: publish from the folder where vk.write_page wrote "
+                    f"panels/ (so the panel pages are gated with the page), or fetch them first: publish.py --pull {n} --folder {a.folder}"
+                    f"{' --subdir ' + sub if sub else ''} --to <folder>/{n}")
+    if kept_gated:
+        notes.append(f"{kept_gated} panel page(s) already PIN-gated on the site, kept gated (pass --open to make them public)")
+    for c in sorted(site_only):                           # a panel page on the site must come from the same build as its link
+        want = builds_of.get(c)
+        if not want:
+            continue
+        site_txt = git("show", f"origin/main:{dest_rel}/{c}")
+        if "<!-- pin-gated" in site_txt[:200]:
+            site_txt = pin_gate_ungate_or_empty(site_txt)
+            if not site_txt:
+                notes.append(f"{c}: PIN-gated on the site and SLP_PIN is missing or wrong, so its build was not compared with the page's")
+                continue
+        mb = re.search(r'name="vk-build" content="([0-9a-f]+)"', site_txt[:60000])
+        if mb and mb.group(1) != want:
+            die(f"{c} on the site is from a different build than the page you are publishing: publish the page from the folder where "
+                f"vk.write_page wrote its panels/ (so they go out together), or fetch the published ones first "
+                f"(publish.py --pull ... --folder {a.folder}{' --subdir ' + sub if sub else ''} --to <folder>/<page>) and rebuild there")
+    for n, cs_ in comps_of.items():
+        for c in cs_:
+            if c in site_only and page_access.get(n) == "open" and \
+                    "<!-- pin-gated" in git("show", f"origin/main:{dest_rel}/{c}")[:200]:
+                notes.append(f"{c}: PIN-gated on the site but its page is now open: fetch the panel pages (publish.py --pull) and publish them with --open too")
+    inherited = 0
+    for comp, parents in parent_of.items():              # a panel page is exactly as private as the page that links it
+        if comp in page_access and any(page_access.get(pg) == "gated" for pg in parents) and page_access[comp] != "gated":
+            page_access[comp] = "gated"
+            inherited += 1
+    if inherited:
+        notes.append(f"{inherited} panel page(s) PIN-gated like the page that links them")
     access = "gated" if a.gate else "open"           # what a NEW folder's README records
     pin = os.environ.get("SLP_PIN")
     if "gated" in page_access.values():
@@ -270,7 +421,7 @@ def main():
     # ---- names: a NEW page's file name is its dated, descriptive title (team rule 2026-10-12)
     for _, n in items:
         rel = f"{dest_rel}/{n}"
-        if not n.endswith(".html") or n == "index.html" or rel in existing or a.keep_name:
+        if not n.endswith(".html") or n == "index.html" or rel in existing or a.keep_name or "/" in n:
             continue
         stem = n[:-5]
         words = [w for w in re.split(r"[-_]+", re.sub(r"\b20\d\d-[01]\d-[0-3]\d\b", "", stem)) if w]
@@ -279,8 +430,8 @@ def main():
                 f"penguin-records-around-palmer-station-2026-10-13.html (vizkit.slug(title) makes one)")
 
     # ---- check, gate, stage
-    stage = Path(os.environ.get("TMPDIR", "/tmp")) / f"publish_stage_{os.getpid()}"
-    stage.mkdir(parents=True, exist_ok=True)
+    stage = Path(tempfile.mkdtemp(prefix="publish_stage_"))      # private (0700), unique; holds plaintext copies of gated pages
+    __import__("atexit").register(shutil.rmtree, stage, ignore_errors=True)
     known = {p[len(dest_rel) + 1:] for p in existing if p.startswith(dest_rel + "/")} | {n for _, n in items}
     known_dir = stage / "_known"
     for k in known:
@@ -290,6 +441,8 @@ def main():
     errors, plan, pages = 0, [], []
     for src, name in items:
         out = stage / name
+        if not out.resolve().is_relative_to(stage.resolve()):
+            die(f"{name}: would be written outside the staging folder")
         if name.endswith(".html"):
             txt = src.read_text(encoding="utf-8")
             plain = txt
@@ -298,16 +451,26 @@ def main():
                     die(f"{src.name} is already gated; set SLP_PIN so it can be checked")
                 import pin_gate
                 plain = pin_gate.ungate(txt, pin)
-            (stage / ("_plain_" + name)).write_text(plain, encoding="utf-8")
-            res = check_page.check(stage / ("_plain_" + name), [str(src.parent), str(known_dir)], forbid)
+            if "/" in name:                          # a panel page: its relative links resolve from panels/<slug>/, as on the site
+                flat = stage / "_chk" / os.path.dirname(name) / ("_plain_" + os.path.basename(name))
+                roots = [str(src.parent), str(known_dir / os.path.dirname(name))]
+            else:
+                flat = stage / ("_plain_" + name)
+                roots = [str(src.parent), str(known_dir), str(known_dir / os.path.dirname(name))]
+            flat.parent.mkdir(parents=True, exist_ok=True)
+            flat.write_text(plain, encoding="utf-8")
+            res = check_page.check(flat, roots, forbid)
             for lvl, msg in res:
                 print(f"publish: check {lvl:5} {name}: {msg}")
             errors += sum(lvl == "ERROR" for lvl, _ in res)
+            out.parent.mkdir(parents=True, exist_ok=True)
             out.write_text(pin_gate.gate(plain, pin) if page_access[name] == "gated" else plain, encoding="utf-8")
-            pages.append((name, title_of(plain), subtitle_of(plain)))
+            if "/" not in name:                      # panel pages are listed through their page, not one by one
+                pages.append((name, title_of(plain), subtitle_of(plain)))
         else:
             if "gated" in page_access.values():
                 print(f"publish: check WARN  {name}: sidecar files are NOT encrypted by the PIN gate; anyone with the URL can read it")
+            out.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, out)
         rel = f"{dest_rel}/{name}"
         plan.append((rel, out, "new" if rel not in existing else "update"))
@@ -352,7 +515,7 @@ def main():
     # ---- report
     print(f"publish: folder {a.folder}{' (new)' if is_new else ''}; clone {CLONE}")
     for rel, out, kind in plan:
-        acc_ = page_access.get(rel.rsplit("/", 1)[-1])
+        acc_ = page_access.get(rel.removeprefix(dest_rel + "/"))
         print(f"publish: {kind:6} {rel}  {out.stat().st_size / 1e6:.2f} MB  {'PIN-gated' if acc_ == 'gated' else 'open' if acc_ else ''}  ->  {url(rel)}")
     for n_ in notes:
         print(f"publish: NOTE {n_}")
@@ -408,12 +571,14 @@ def main():
     def link_lines(rels):
         print("publish: links for the reply (paste as they are):")
         for rel in rels:
+            if rel.removeprefix(dest_rel + "/").count("/"):
+                continue                                        # a panel page: its page links to it
             print(f"[{titles.get(rel) or rel.rsplit('/', 1)[-1]}]({url(rel)})")
 
     LINKS_LOG.parent.mkdir(parents=True, exist_ok=True)
     with LINKS_LOG.open("a") as fh:                       # the record behind `publish.py --links`
         for rel, _ in live:
-            if rel.endswith(".html"):
+            if rel.endswith(".html") and not rel.removeprefix(dest_rel + "/").count("/"):
                 acc_ = page_access.get(rel.rsplit("/", 1)[-1], "open")
                 fh.write("\t".join([time.strftime("%Y-%m-%dT%H:%M:%S%z"), a.folder, rel.rsplit("/", 1)[-1],
                                     (titles.get(rel) or "").replace("\t", " "), url(rel), acc_]) + "\n")

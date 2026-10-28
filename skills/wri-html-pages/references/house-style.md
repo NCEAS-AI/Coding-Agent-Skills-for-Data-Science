@@ -9,8 +9,8 @@ judged rather than pattern-matched.
 The archetypes show these rules applied (built from open ecological data, so they can be shared with anyone);
 open them before building something new:
 - Map: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/map-archetype-penguin-records-around-palmer-station-2026-10-13.html
-- Charts: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-15.html
-- A page built over several requests: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/exploration-archetype-palmer-penguins-built-step-step-2026-10-15.html
+- Charts: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-27.html
+- A page built over several requests: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/exploration-archetype-palmer-penguins-built-step-step-2026-10-27.html
 
 ## Titles, subtitles and links (Carlo, 2026-10-12)
 
@@ -44,6 +44,9 @@ but a title that holds every detail is too much to read. So:
   bug" strips. What we tried and dropped stays between Claude and the user; the page shows results.
 - **Explain terms once, simply.** If a term like recall, F1, or "direct exposure" is needed, say what
   it means in a clause the first time ("recall: of the buildings that really burned, the share we caught").
+- **Someone sent one panel.** Copy link sends a panel on its own: that reader sees the card's title, caption, hovers and checks,
+  and none of the page's lede or "How to read this" box. So each card's title says what it shows in a few words, and its caption names
+  the cohort and what to notice, as if it were the only thing they read.
 - **Tone is serious and professional,** especially on anything public-facing: say what the numbers are
   for and not for (e.g. "a scientific estimate, not an official damage assessment; do not use for
   emergency, insurance or legal decisions"). No cheerleading.
@@ -167,6 +170,15 @@ but a title that holds every detail is too much to read. So:
 - **Sources:** each dataset with its citation, DOI or URL, and licence.
 - **A provenance line:** the build date, and the script that built the page *as a repository-relative
   path*. Never an absolute path from this machine (`/home/...`), which the checker blocks.
+
+## Every visualization can be sent on its own (Carlo, 2026-10-27)
+
+- **One plot, one link.** Every chart card and every map panel also exists as its own page, so a single visualization can
+  be sent to one person without the whole page. Next to each one are two buttons: **Full screen** (the panel alone, as
+  large as the screen allows, in a new tab) and **Copy link** (the web address of that page). A map in a chart page also
+  gets its own page (unless `standalone=False`); a heavy layer (building outlines) may live only in that page, which has the
+  chart page's access, so licence-restricted layers stay out of it.
+- Build with `vk.write_page(dest, page)`, never `dest.write_text(page)`; vizkit does the rest (charts.md).
 
 ## Maps specifically
 

@@ -104,7 +104,8 @@ document.getElementById("f").addEventListener("submit", function(e) {
   if (raw) { withKey(raw).then(show, function() { try { sessionStorage.removeItem("__KEY__"); } catch (e) {} lockForm(); }); }
   else { lockForm(); }
 })();
-</script></body></html>""".replace("__KEY__", KEY_NAME)
+})();
+</script></body></html>""".replace("__KEY__", KEY_NAME)          # the second })(); closes the wrapper opened in gate(): nothing here is global
 HEAD = HEAD.replace("__KEY__", KEY_NAME)
 
 
@@ -128,7 +129,9 @@ def gate(plain: str, pin: str) -> str:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from vizkit import head_icon_tags      # flame icon + link-preview image only: no title or description leaks out
     head = HEAD.replace("<title>Protected page</title>", "<title>Protected page</title>" + head_icon_tags(), 1)
-    return head + f'var S="{SITE_SALT_B64}", I="{b(iv)}", C="{b(ct)}", N={ITERATIONS};' + TAIL
+    # the gate's own variables live inside a function: once the page is decrypted and written over this document
+    # (same window), a page that declares its own `const C` (a map page) must not collide with them
+    return head + f'(function() {{ var S="{SITE_SALT_B64}", I="{b(iv)}", C="{b(ct)}", N={ITERATIONS};' + TAIL
 
 
 def ungate(gated: str, pin: str) -> str:

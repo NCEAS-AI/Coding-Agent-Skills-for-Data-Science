@@ -9,7 +9,7 @@ HTML/CSS + one tiny tooltip script, no chart library) and publishes them (`refer
 1. Read `references/house-style.md`. It is the team's standing preferences (audience, numbers,
    hovers, colours, layout) with the reason for each. It applies to maps too.
 2. Look at the archetype, which shows every component in use:
-   `examples/penguin_chart_demo.py` → https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-15.html
+   `examples/penguin_chart_demo.py` → https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-27.html
    When the user says "like the archetype but …", start from that script.
 
 ## Workflow
@@ -27,7 +27,8 @@ HTML/CSS + one tiny tooltip script, no chart library) and publishes them (`refer
 3. **Title and subtitle** (house-style.md, "Titles, subtitles and links"): a short, specific title with
    the date at the end, `f"Penguin body mass by species and sex · {vk.today()}"` (vk.today(): the date in the team's time zone), and a subtitle built
    from the data with the detail (cohort, size, years, measure, split, what is new in this iteration).
-   Write the page to `OUT_DIR / f"{vk.slug(title)}.html"`, so the file name and link carry the title.
+   Write the page with `vk.write_page(OUT_DIR / f"{vk.slug(title)}.html", page)` (not `write_text`: it also writes each
+   panel's own page), so the file name and link carry the title.
 4. **Arrange the page:** `vk.page(title, body, subtitle=, eyebrow=, lede=, how_to_read=, tiles=, sources=, footer=)`
    with `vk.section(...)` blocks, each holding `vk.card(chart, title=, caption=)`.
 5. **Check it renders** at phone and desktop width (see "Screenshots" below) and look at the images:
@@ -45,7 +46,8 @@ HTML/CSS + one tiny tooltip script, no chart library) and publishes them (`refer
 | `line_chart(x, series, tips=, ref=, phone=)` | trends, several series | SVG; `phone="fit"` (narrow redraw) or `"scroll"` |
 | `heatmap(rows, cols, cells, ramp=, domain=, row_groups=, extra_cols=, extra=, phone=)` | two-way tables (state × year, decile × region) | cell = big number + small number; `{"empty": True}` greys a cell with too few cases; `phone="scroll"` or `"cards"` |
 | `ramp_key(lo, hi, ramp, empty_label=)` | key above a heatmap | |
-| `map_panel(spec, base=, height=)` | an interactive map as one panel of the page | same spec as a standalone map (map-spec.md); see "Map panels" below |
+| `map_panel(spec, base=, height=, name=, standalone_spec=)` | an interactive map as one panel of the page, plus the same map as its own page | same spec as a standalone map (map-spec.md); see "Map panels" and "Every panel has its own page" below |
+| `write_page(dest, page_html)` | write the page and the panel pages beside it | use it instead of `dest.write_text(page)` |
 | `table(cols, rows, numeric=, phone=, shade=, col_tips=)` | exact values, top-N lists | right-aligns numeric columns; `phone="scroll"` or `"cards"` |
 | `legend(items)`, `note(title, html)`, `card(..., checks=[...])`, `section(...)` | layout pieces | `checks` = the rigor pass for that panel (rigor.md), shown as "How this panel was checked" |
 | `tip("Heading", "line", ..., meaning=, tech=)` | the `data-tip` text for any element | first line bold; `meaning` adds "What it suggests: …" (plain); `tech` is the technical version |
@@ -66,6 +68,7 @@ html = vk.living_page(existing,                     # path or HTML of the curren
                       subtitle=..., eyebrow=..., sources=[...],   # page settings; kept unless passed again
                       add=[vk.panel(chart_html, title="…", id="burned-per-year", caption=..., checks=[...])],
                       remove={"mean-per-fire": "why it came off the page"})
+vk.write_page(path, html)                           # the page plus panels/<page-slug>/ (not path.write_text)
 ```
 - New panels go on top, in the order given; a panel whose `id` is already on the page is updated in place
   ("Added … · updated …"). Give every panel a short explicit `id`.
@@ -95,6 +98,49 @@ number stays). Cells can be dicts `{"text", "v", "tip", "flag"}`; `flag` draws a
 Scales: `good_bad` (green → red; set `better`), `blues` / `heat` (size, no judgement), `diverging`
 (with `mid`, e.g. 0). Put a `shade_key` above the table.
 
+## Every panel has its own page (Carlo, 2026-10-27)
+
+(`<page-slug>` below is the page's file name without `.html`; `write_page` creates the folder.) So that one plot can be sent on its own, every `vk.card` and `vk.panel` (and so every map panel) is also built as a page of
+its own, and the card shows two buttons above the chart: **Full screen** (opens that page in a new tab: full width,
+taller charts, the map filling the window) and **Copy link** (copies that page's web address; it resolves the relative link
+against the page's own address, so it gives the published URL once the page is published). What you do:
+
+```python
+page = vk.page(title, body, subtitle=..., sources=[...], footer=...)        # or vk.living_page(...)
+vk.write_page(dest, page)          # NOT dest.write_text(page): also writes panels/<page-slug>/<panel>.html
+```
+
+- **Give every card a specific title.** It becomes the panel page's browser tab and link-preview text ("<card title> — <page
+  title> · <date>"); an untitled card is called "Panel 1", "Panel 2". Names are fixed when `vk.write_page` runs, in page order:
+  cards with a `panel_id=` first, then by title (`vk.card(..., title="How often inspectors and the model agree",
+  panel_id="agreement")` gives `agreement.html`); duplicates get -2, -3. **Untitled or same-titled cards get names that depend on
+  their order, so give them a `panel_id=`.** A living panel's own page is named from its id and keeps that name when the panel is
+  updated; a removed panel's name is never reused. The names carry no date, so a link copied earlier still shows the panel after
+  the page is updated. Panel pages carry the page's sources, footer and byline, a link back, and their own Plain / Technical
+  switch. A relative link or image inside a card (to a sibling page, say) is rebased for the panel page automatically.
+- A card with a map uses the map's own page, titled "<card title> — <page title> · <date>" unless you pass `standalone_title=`
+  (a title that does not end with a date gets " — <page title> · <date>" added). `vk.map_panel(..., name="short-name",
+  standalone_title=..., standalone_spec=...)` names it and lets it carry more than the panel (for example a heavy building-outline
+  layer, a few MB, that would bloat the page; **that page has the chart page's access, so keep private or internal-only layers
+  out of it**). The map's own page has its own Copy link button.
+- `vk.card(..., standalone=False)` leaves the buttons off a card that is not a visualization. Notes, tiles and section
+  intros never get them.
+- `publish.py` publishes `panels/<page-slug>/` with the page, with the page's access (a gated page gets gated panel pages), and
+  keeps the READMEs to one line per page. `publish.py --pull PAGE` fetches the page **and its panel pages**, so a new session can
+  keep building. When a panel is removed from a living page, vizkit deletes its local panel page and prints the
+  `--remove panels/<page-slug>/<name>.html` argument to add to the publish command (`publish.py --folder F PAGE.html --remove
+  panels/<slug>/<name>.html --execute -m "..."`); the published copy stays live until you do. `publish.py --remove PAGE.html`
+  takes the panel pages in the page's own `panels/<file stem>/` folder with it. Do not edit the page's HTML between `vk.page()`
+  and `vk.write_page()` (a warning says the panel pages would show the original card); a map's own page shows the map's data as
+  they were when `vk.map_panel()` ran.
+- `check_page.py`: a panel page that is missing, or from another build than the link to it (the page was rebuilt with
+  `dest.write_text`), is an error (rebuild with `vk.write_page`); a card without the buttons is a warning, except a card made with
+  `standalone=False`; a map embedded by an older vizkit (no own-page marker) is a warning: re-add the panel with the same id.
+- Build the cards and write the page in the same process (the panels are registered in memory until `write_page`). A script
+  that builds a page but never calls `write_page` gets a warning at exit. On a local file (before publishing) Copy link copies
+  nothing and says "Publish first". Full screen on a PIN-gated page opens the panel already unlocked after a plain click; a tab
+  opened with Ctrl or the middle button asks for the PIN again.
+
 ## Map panels
 
 A chart page can hold an interactive map as one of its panels: `vk.card(vk.map_panel("map_spec.json"),
@@ -106,8 +152,8 @@ scroll on a desktop move the map, so the page scrolls past it normally; it has a
 key folds into a bar on a phone; the page's light / dark switch and the Plain / Technical switch of the card holding it carry into it.
 
 Use a panel when the map is one view among several (where the fires are, next to charts of what burned).
-Use a standalone map page (maps.md) when the map is the main thing or is heavy (more than a few MB of
-data), and link to it from the chart page.
+Use a standalone map page (maps.md) when the map is the main thing. A heavy map (more than a few MB of data) goes in the
+map's own page only: pass `standalone_spec=` with the extra layers and keep the panel light.
 
 ## Phone layout: decide per chart
 

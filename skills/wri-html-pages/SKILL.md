@@ -4,14 +4,14 @@ description: "Make every data visualization as an HTML page in the WRI / NCEAS h
 license: CC0-1.0 for code and text; the NCEAS and WRI logos in assets/ are not covered (see README.md)
 compatibility: Python 3.10+ and git with push access to a GitHub Pages repo (set in references/identity.json). Screenshots need Chrome or Chromium and websocket-client; maps from vector or raster files need geopandas or rasterio; the optional PIN gate needs cryptography. Map tiles and libraries load from the internet.
 metadata:
-  version: "1.9.0"
+  version: "1.10.0"
   author: "Carlo Broderick (NCEAS, UC Santa Barbara)"
   source: "https://github.com/NCEAS-AI/Coding-Agent-Skills-for-Data-Science"
 ---
 
 # wri-html-pages: maps and chart pages in our house style, published by link
 
-Version 1.9.0 (2026-10-19). Every page made with this skill looks and behaves the same way, works on
+Version 1.10.0 (2026-10-27). Every page made with this skill looks and behaves the same way, works on
 a phone and a desktop, carries a short dated title with a detailed subtitle, says who made it and when,
 and ends up at a link collaborators can open.
 
@@ -48,6 +48,32 @@ topic, or when the user asks for one.
 - Build with `vk.living_page(existing, add=[vk.panel(..., id="short-id")], remove={"id": "why"})`
   (charts.md, "Living pages"). The file name and title keep the page's start date; the byline shows when
   it was started and last updated.
+
+## Every visualization has its own page, with two buttons (Carlo, 2026-10-27)
+
+Every chart card (bars, columns, lines, heatmaps, tables) and every map panel on a chart page also gets its **own
+HTML page**, so one visualization can be sent to someone without the whole page. vizkit does it: `vk.card` /
+`vk.panel` and `vk.map_panel` register each panel, and **`vk.write_page(dest, page_html)` (not `dest.write_text`)**
+writes the page and, beside it, `panels/<page-slug>/<panel>.html`. Next to every visualization the card shows two
+buttons:
+
+1. **Full screen**: opens that panel alone, in a new tab, as large as the screen allows (a full-width page, taller
+   charts, the map filling the window), still interactive, with a link back to the full page.
+2. **Copy link**: copies the web address of that panel's own page, ready to paste into an email or chat.
+
+A map's own page can carry more than the embedded map (`vk.map_panel(..., standalone_spec=...)`, for example a heavy
+building-outline layer that would bloat the chart page; the map's page has the chart page's access, so the
+private-data rule above applies to those layers too). `publish.py` publishes the panel pages with the page automatically
+(they take the page's access, gated if the page is gated, and are not listed one by one in the READMEs; `publish.py --pull`
+fetches them with the page); `check_page.py` reports a panel page that is missing or from another build than its link as an
+error, a chart card without the buttons as a warning, and a map built by an older vizkit (no page of its own) as a warning.
+Panel pages are named when the page is written, in page order, from `panel_id=` (a living panel uses its id) or else the card
+title, with no date, so a copied link survives updates: an updated living panel keeps its name and the name of a removed panel
+is never given to another (a map card is named from its `panel_id=`, else `map_panel(name=)`, else its title, else the label; names from `name=`, title or label get `-map` added unless they already contain the word map). The panel pages live in `panels/<page file name without .html>/`. Give every card a specific title (it
+names the panel's browser tab) and give untitled or same-titled cards a `panel_id=`. When a panel is removed from a living page, vizkit deletes its local panel page and prints
+the `--remove panels/<page-slug>/<name>.html` argument to add to the publish command; the published copy stays live until you
+publish with it. On a local file Copy link copies nothing and says "Publish first". In the reply, give the page's link;
+panels are reached from it.
 
 ## The link goes in every reply (Carlo, 2026-10-12)
 
@@ -98,7 +124,8 @@ to its live, newest version**, unasked, so the user never has to ask for the lin
    layout case by case (fit, frozen-pane scroll, or cards: charts.md, "Phone layout").
 6. **Publish:** `python3 $SKILL/scripts/publish.py --folder FOLDER PAGE.html` (dry run), then with
    `--execute --wait -m "..."`. It checks the page, updates the READMEs, pushes, and waits until the
-   link is live. Pages are **open by default**; add `--gate` (PIN) only when the user asks for it.
+   link is live. Pages are **open by default**; add `--gate` (PIN) only when the user asks for it. The panel
+   pages in `panels/<page-slug>/` go out with the page by themselves.
 7. **Hand over the link:** end the reply with the `[title](live URL)` line(s) publish.py prints, each
    followed by the page's subtitle, and keep linking it in every later reply about it (above).
 
@@ -108,10 +135,10 @@ to its live, newest version**, unasked, so the user never has to ask for the lin
 |---|---|
 | `scripts/build_map.py` + `assets/map_template.html` | spec → interactive map page (MapLibre GL JS 5.24.0) |
 | `scripts/raster_to_png.py` | GeoTIFF → coloured, Web-Mercator PNG overlay for a map |
-| `scripts/vizkit.py` | chart page building blocks (page shell, tiles, bars, columns, lines, heatmaps, tables, map panels, tooltips) |
+| `scripts/vizkit.py` | chart page building blocks (page shell, tiles, bars, columns, lines, heatmaps, tables, map panels, tooltips) and the per-panel pages (`write_page`, Full screen and Copy link buttons) |
 | `scripts/screenshot.py` | headless Chrome captures at desktop and phone size, with JS errors |
-| `scripts/check_page.py` | pre-publish checks (dated title, no local paths, links resolve, no `cursor: help`, size) |
-| `scripts/publish.py` | publish to the GitHub Pages site in identity.json (WRI-Science/public_publication) and confirm the live link |
+| `scripts/check_page.py` | pre-publish checks (dated title, no local paths, links resolve, no `cursor: help`, size, each chart card's Full screen / Copy link buttons, maps built by an older vizkit, and that each panel page comes from the same build as its link) |
+| `scripts/publish.py` | publish to the GitHub Pages site in identity.json (WRI-Science/public_publication), with each chart page's `panels/` pages, and confirm the live link |
 | `scripts/pin_gate.py` | encrypt or decrypt a page behind the site PIN (only when the user asks) |
 | `references/identity.json` | author, affiliation, time zone, logos and links, GitHub org and the publishing site (the WRI team's). A personal copy at `~/.config/wri-html-pages/identity.json` (or `$WRI_HTML_PAGES_IDENTITY`) wins and survives updates |
 | `references/house-style.md` | the preferences every page follows |
@@ -119,8 +146,8 @@ to its live, newest version**, unasked, so the user never has to ask for the lin
 
 The archetypes these produce are the reference look:
 - Map: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/map-archetype-penguin-records-around-palmer-station-2026-10-13.html
-- Charts: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-15.html
-- A page built over several requests: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/exploration-archetype-palmer-penguins-built-step-step-2026-10-15.html
+- Charts: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-27.html
+- A page built over several requests: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/exploration-archetype-palmer-penguins-built-step-step-2026-10-27.html
 
 ## When the user critiques a page
 

@@ -1,7 +1,8 @@
 # Maps: interactive maps in our house style
 
 Every map we share should look and behave the same way, on a phone and on a desktop. A map can be a
-page of its own (this guide) or one panel of a chart page (`vk.map_panel`, charts.md "Map panels"),
+page of its own (this guide) or one panel of a chart page (`vk.map_panel`, charts.md "Map panels"; a map in a chart page
+also gets its own page, with a Full screen and a Copy link button, see charts.md "Every panel has its own page"),
 built from the same spec. This skill fills
 one tested template (`assets/map_template.html`, MapLibre GL JS 5.24.0) from a JSON spec with
 `scripts/build_map.py`, then publishes it (`references/publishing.md`).

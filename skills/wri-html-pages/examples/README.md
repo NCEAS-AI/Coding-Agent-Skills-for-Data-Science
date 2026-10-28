@@ -8,8 +8,8 @@ when the house style changes, so they stay the reference.
 | Script | Page it builds | What it shows |
 |---|---|---|
 | `penguin_map_demo.py` | [Map archetype](https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/map-archetype-penguin-records-around-palmer-station-2026-10-13.html) | A standalone map: two point layers with species filters and counts, ready-made hover cards, "places to look" tabs, base maps, Plain / Technical text, layer descriptions written from the data |
-| `penguin_chart_demo.py` | [Chart archetype](https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-15.html) | A chart page with every component: tiles, stacked columns, a heatmap with empty cells, a map panel, bars with bootstrap intervals, a line chart, shaded tables, one merited red box (Simpson's paradox), and a rigor check under each panel |
-| `penguin_living_demo.py` | [Exploration archetype](https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/exploration-archetype-palmer-penguins-built-step-step-2026-10-15.html) | A living page built over three requests: new panels on top, and a misleading panel (body mass by island, which compares species) removed with its reason kept in the page history |
+| `penguin_chart_demo.py` | [Chart archetype](https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-27.html) | A chart page with every component: tiles, stacked columns, a heatmap with empty cells, a map panel, bars with bootstrap intervals, a line chart, shaded tables, one merited red box (Simpson's paradox), and a rigor check under each panel |
+| `penguin_living_demo.py` | [Exploration archetype](https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/exploration-archetype-palmer-penguins-built-step-step-2026-10-27.html) | A living page built over three requests: new panels on top, and a misleading panel (body mass by island, which compares species) removed with its reason kept in the page history |
 | `penguin_data.py` | | Downloads and caches the data below (standard library only) |
 
 ## Running them
@@ -20,7 +20,7 @@ python3 examples/penguin_chart_demo.py OUT_DIR     # needs pandas and numpy
 python3 examples/penguin_living_demo.py OUT_DIR    # needs pandas and numpy
 ```
 
-Each writes `OUT_DIR/<dated title slug>.html`; publish it with `scripts/publish.py` as usual. The data are
+Each writes `OUT_DIR/<dated title slug>.html` and, for the chart and exploration pages, `OUT_DIR/panels/<page slug>/`: one page per chart card and the map's own page, the targets of each panel's Full screen and Copy link buttons. Publish the page with `scripts/publish.py` as usual; the panel pages go with it. The data are
 downloaded on the first run into `~/.cache/wri-html-pages/example-data` (or `$EXAMPLE_DATA`) with the date
 they were fetched; delete a file there to fetch it again.
 

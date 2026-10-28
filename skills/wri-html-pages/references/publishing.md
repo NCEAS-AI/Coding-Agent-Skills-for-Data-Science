@@ -32,9 +32,28 @@ internal-only (WRI team: Overture-derived layers) are not published openly witho
   has no date or fewer than three words, or whose `<title>` does not end with the date; existing pages
   from before the rule can still be updated. A living page keeps its name (its start date) while panels
   are added; a new dated page is for a new analysis.
-- `publish.py --pull FILE --folder F --to PATH` fetches the current published page (ungated with SLP_PIN if
-  it is gated) so a new session can keep adding to it. Describe iterations in plain words; an internal tag (`v5`)
+- `publish.py --pull FILE --folder F --to PATH` fetches the current published page, and its panel pages beside it (ungated
+  with SLP_PIN if it is gated), so a new session can keep adding to it. Always give `--to` a folder other than the one holding a
+  page you just rebuilt (the default writes `./FILE` and would overwrite it). Describe iterations in plain words; an internal tag (`v5`)
   may appear only next to the plain description. Only a folder's `index.html` is exempt.
+
+## Panel pages travel with their page (Carlo, 2026-10-27)
+
+A chart page built with `vk.write_page` has a folder of panel pages beside it, `panels/<page-slug>/`, one per chart card
+and map panel (the targets of each panel's **Full screen** and **Copy link** buttons). `publish.py PAGE.html` finds them (every
+link marked `data-companion`) and publishes them with the page, with the same access: open, or PIN-gated when the page is (a panel
+page is never more public than the page that links it, even a new one added to an already-gated page; publish.py says how many
+in a NOTE). They are not listed in the READMEs one by one and they are exempt from the dated-name rule (their titles still end with the date).
+**Full screen** on a PIN-gated page opens the panel already unlocked in the same browser session; a person who is sent a **Copy link**
+is asked for the PIN (a plain click on Full screen carries the key; Ctrl-click or the middle button does not). A panel page that
+lives under another path than `panels/<slug>/<name>.html` is refused, and a page that links panel pages cannot be renamed at
+publish (`FILE:NEW_NAME`): rebuild it under the new name with `vk.write_page`. Panel pages link back with `../../<page>.html`;
+check_page resolves that against the published folder. If the panel pages are on the site but not in your folder, the page is
+refused when it is gated and they are open, or when they come from another build: `publish.py --pull PAGE --folder F` fetches the
+page with its panel pages. In the reply, link the page; each panel's own link is on the page (and Copy link gives it). To retire
+one panel: add `--remove panels/<page-slug>/<name>.html` to the publish command (vizkit prints it when it deletes the local
+copy); `publish.py --remove PAGE.html` takes the panel pages in its own `panels/<file stem>/` folder with it (panel pages it
+links in another folder are kept, with a NOTE).
 
 ## Access: open by default, PIN only when asked (Carlo, 2026-10-12)
 
@@ -63,7 +82,8 @@ internal-only (WRI team: Overture-derived layers) are not published openly witho
    It syncs its own sparse clone (`~/.cache/public_publication`), works out the folder's access,
    runs `check_page.py` on the plaintext, and prints what it would write and the live URLs.
    Add `--describe "One line"` for a new folder; `--gate` only if the user asked for a PIN; `file.html:new-name.html`
-   to publish under another name; `--subdir maps` for a subfolder; `--remove old.html` to delete one.
+   to publish under another name (not for a page that links panel pages); `--subdir maps` for a subfolder; `--remove old.html`
+   to delete one (with the panel pages in its own `panels/<file stem>/` folder).
 3. **Fix every check error** (they are real problems: a `/home/...` path, a broken link, an
    unfilled template slot, `cursor: help`, no viewport, a file over 95 MB) and rerun.
 4. **Publish** with a commit message in the site's style (the page or folder, then what a reader

@@ -1,6 +1,6 @@
 # wri-html-pages: an agent skill for maps and chart pages, published by link
 
-Version 1.7.0, 2026-10-13. Made by Carlo Broderick (NCEAS, UC Santa Barbara) with Claude, for the
+Version 1.10.0, 2026-10-27. Made by Carlo Broderick (NCEAS, UC Santa Barbara) with Claude, for the
 Wildfire Resilience Index team. Public home: https://github.com/NCEAS-AI/Coding-Agent-Skills-for-Data-Science
 (`skills/wri-html-pages/`).
 
@@ -8,12 +8,13 @@ With this skill installed, ask your coding agent for a map or a chart page ("map
 species", "chart body mass by species and sex", "add a panel with the yearly totals") and it
 builds the page in the team's house style, checks every panel for statistical rigor, looks at it on
 desktop and phone, publishes it to the team's GitHub Pages site, and gives you the link. Further requests
-add panels to the same page, newest on top.
+add panels to the same page, newest on top. Every chart and map on a page also gets its own page, with
+**Full screen** and **Copy link** buttons beside it, so one plot can be sent on its own.
 
 See what the pages look like:
 - Map: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/map-archetype-penguin-records-around-palmer-station-2026-10-13.html
-- Charts: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-15.html
-- A page built up over several requests: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/exploration-archetype-palmer-penguins-built-step-step-2026-10-15.html
+- Charts: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-27.html
+- A page built up over several requests: https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/exploration-archetype-palmer-penguins-built-step-step-2026-10-27.html
 
 ## Install
 
@@ -70,9 +71,27 @@ pages. Another team replaces them with its own logos (set in its identity.json).
 
 ## Version history
 
+- 1.10.0 (2026-10-27): every visualization has its own page. Each chart card and each map panel on a chart page
+  also gets its own HTML page (`panels/<page-slug>/...`, written by `vk.write_page`) with two buttons beside it:
+  **Full screen** (the panel alone, as large as the screen allows, in a new tab) and **Copy link** (copies that
+  page's web address, so one plot can be sent on its own). A map's own page can carry more than the embedded map
+  (`standalone_spec=`) and has a Copy link button. Panel page names carry no date and are fixed when the page is
+  written (from the panel id or card title, in page order), so copied links survive updates: an updated living
+  panel keeps its name, a removed panel's name is never reused, and removing a panel removes exactly its own page.
+  `publish.py` publishes the panel pages with the page, gated when the page is gated (a gated map's own page now
+  opens: the PIN gate no longer leaves globals behind), `--pull` fetches them, and `--remove PAGE` takes them down;
+  `check_page.py` flags a missing or stale panel page (each panel page and its link carry one build id). Titles are
+  no longer escaped twice, a bare `<` in a title survives, and a staging folder for gated copies is private and removed.
+  Panel pages live in `panels/<page file name>/`. `slug()` now decodes HTML entities and folds letters such as ß ø æ ł
+  (a title like "Fire &amp; smoke" or "Straße" gives a different slug than in 1.9.0: for an existing living page keep its
+  current file name instead of recomputing it from the title). `build_map` no longer changes the spec it is given (the
+  key's counts were written into the caller's copy).
 - 1.9.0 (2026-10-19): every page carries the WRI flame as its browser-tab icon and as the link-preview image
   in Slack, email and social media (Open Graph / Twitter tags with the title and subtitle). Set in identity.json
   `page_icon`; the preview image is hosted at `site_assets/` on the pages site. Gated pages show only the flame.
+- 1.8.0 (2026-10-15): the Plain / Technical switch is per panel, not page-wide: every chart card, note, section and header
+  with technical text gets its own small switch, which changes only that panel's caption, hovers, checks and map.
+- 1.7.1 (2026-10-14): panel date stamps on living pages wrap on phones.
 - 1.7.0 (2026-10-13): published in NCEAS-AI/Coding-Agent-Skills-for-Data-Science, ready for other teams.
   - Example pages use open ecological data anyone can download (Palmer Penguins; GBIF penguin records around
     Palmer Station; the SCAR gazetteer), fetched and cached by `examples/penguin_data.py`, not wildfire data.

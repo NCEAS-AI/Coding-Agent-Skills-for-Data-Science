@@ -10,7 +10,7 @@ WHY THIS EXISTS
 
 RUN (needs pandas and numpy; data are downloaded once into the example-data cache)
     python3 penguin_chart_demo.py OUT_DIR
-    -> OUT_DIR/<dated title slug>.html
+    -> OUT_DIR/<dated title slug>.html, plus panels/<page slug>/: one page per chart card and the map's own page (the targets of each panel's Full screen and Copy link buttons)
 """
 from __future__ import annotations
 
@@ -288,5 +288,5 @@ page = vk.page(
              "Map base layers: Esri World Imagery; OpenStreetMap contributors via OpenFreeMap (ODbL)."],
     footer="Made with the wri-html-pages skill: examples/penguin_chart_demo.py.")
 dest = out / f"{vk.slug(title)}.html"
-dest.write_text(page)
-print("wrote", dest, f"{len(page) / 1e3:.0f} kB")
+for f in vk.write_page(dest, page):        # the page and, beside it, one page per panel (panels/<page slug>/)
+    print("wrote", f, f"{f.stat().st_size / 1e3:.0f} kB")

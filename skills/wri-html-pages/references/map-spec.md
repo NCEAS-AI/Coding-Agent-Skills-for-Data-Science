@@ -34,7 +34,8 @@ so they may hold `<b>`, `<a>`, `<i>`. They are written by us, never copied from 
   "affiliation": "NCEAS",                       // optional, with "author"
   "brand": true,                                // NCEAS / WRI logos + WRI GitHub links at the foot of the panel
   "sources": ["(HTML) one line per dataset: citation, link, licence"],
-  "footer": "(HTML) Built YYYY-MM-DD by path/in/repo/script.py"     // repository-relative path only
+  "footer": "(HTML) Built YYYY-MM-DD by path/in/repo/script.py",    // repository-relative path only
+  "back_link": {"href": "../../page.html", "label": "Back to the page"},   // optional: a link (and a Copy link button) under the title; standalone map only. vk.map_panel sets it on the map's own page
 }
 ```
 

@@ -109,6 +109,9 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);margin:0;
   .eyebrow{font-size:10.5px;margin-bottom:3px}
   .maplibregl-ctrl-bottom-left,.maplibregl-ctrl-bottom-right{bottom:var(--ph)}
 }
+.backlink{margin-top:3px;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}.backlink a{font-size:12.5px;color:var(--ink-2);text-decoration:underline}.backlink a:hover{color:var(--ink)}
+@media print{#cplink,.backlink{display:none!important}}
+.cplink{font:500 12px var(--f-sans,system-ui,sans-serif);color:var(--ink-2);background:var(--surface,transparent);border:1px solid var(--line-2,#ccc);border-radius:999px;padding:2px 10px;cursor:pointer;white-space:nowrap}.cplink:hover,.cplink:focus-visible{color:var(--ink)}
 /* byline and the NCEAS / WRI / GitHub strip (identity.json) */
 .byline{margin:0 0 10px;font-size:14px;color:var(--ink-2)}
 .byline time{font-family:var(--f-mono);font-size:13px;white-space:nowrap}
@@ -140,7 +143,7 @@ html.embed #pbody > section:first-of-type h2{margin-top:4px}
 <div id="map" role="region" aria-label="Interactive map"></div>
 <aside id="panel" aria-label="Map key and controls">
   <div class="ph">
-    <div class="t"><div class="eyebrow" id="eyebrow"></div><h1 id="title"></h1></div>
+    <div class="t"><div class="eyebrow" id="eyebrow"></div><h1 id="title"></h1><div class="backlink" id="backlink"></div></div>
     <button id="panelToggle" class="iconbtn" aria-expanded="true" aria-controls="pbody" aria-label="Hide or show the key">
       <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 10l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
@@ -174,6 +177,15 @@ const canHover = matchMedia('(hover:hover) and (pointer:fine)').matches;
 
 // ---------- panel text (spec text fields are trusted HTML written by the page author)
 $('eyebrow').innerHTML = C.eyebrow || ''; $('title').innerHTML = C.title || '';
+if(C.back_link && C.back_link.href && !C.embed){ $('backlink').innerHTML = '<a href="' + esc(C.back_link.href) + '">← ' + esc(C.back_link.label || 'Back to the page') + '</a><button type="button" class="cplink" id="cplink">⧉ Copy link to this map</button>';
+  const cp = $('cplink'), cpLabel = cp.textContent; let cpTimer = null;
+  const cpFlash = t => { cp.textContent = t; clearTimeout(cpTimer); cpTimer = setTimeout(() => { cp.textContent = cpLabel; }, 1800); };
+  cp.addEventListener('click', () => { const url = location.href.split('#')[0];
+    if(location.protocol === 'file:'){ cpFlash('Publish first: this is a local file'); return; }
+    const fb = () => { const ta = document.createElement('textarea'); ta.value = url; ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0'; document.body.appendChild(ta); ta.select();
+      let ok = false; try { ok = document.execCommand('copy'); } catch(e){} document.body.removeChild(ta); if(ok) cpFlash('✓ Copied'); else window.prompt('Copy this link', url); };
+    if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(url).then(() => cpFlash('✓ Copied'), fb); else fb(); }); }
+else $('backlink').remove();
 $('subtitle').innerHTML = C.subtitle || ''; if(!C.subtitle) $('subtitle').remove();
 $('lede').innerHTML = C.lede || ''; if(!C.lede) $('lede').remove();
 const both = (pl, te) => te ? '<div class="plain">' + (pl || '') + '</div><div class="tech">' + te + '</div>' : (pl || '');

@@ -21,7 +21,7 @@ USAGE
                 OUT_DIR/data/) instead of inlining them. Use it when the page would pass ~25 MB.
                 Sidecar files are NOT covered by the PIN gate: in a gated folder, inline instead.
 
-    Paths in the spec are relative to the spec file. Spec reference: ../references/spec.md.
+    Paths in the spec are relative to the spec file. Spec reference: ../references/map-spec.md.
     Vector inputs: GeoJSON in EPSG:4326, or anything GeoPandas reads (.gpkg .parquet .shp .fgb),
     which is reprojected to EPSG:4326.
 
@@ -137,6 +137,8 @@ def build_page(spec: dict, base: Path, *, embed: bool = False, sidecar_dir: Path
     """Spec -> (page HTML, layer configs, warnings). embed=True makes the panel version that a chart page
     shows inside a card (vizkit.map_panel): no title block, byline, sources or logos (the host page has
     them), two-finger / Ctrl-scroll gestures so the page still scrolls past it, a fullscreen button."""
+    import copy
+    spec = copy.deepcopy(spec)       # the colour keys get their counts written in place: never touch the caller's spec
     nd = int(spec.get("precision", DEFAULT_PRECISION))
     warnings, data_blocks, fit_bounds, layers_cfg = [], [], [], []
 
@@ -223,8 +225,8 @@ def build_page(spec: dict, base: Path, *, embed: bool = False, sidecar_dir: Path
 
     title = spec.get("title", "") if not embed else spec.get("panel_title", "Map")
     page = TEMPLATE.read_text()
-    plain_title = re.sub(r"<[^>]+>", "", title)
-    plain_desc = re.sub(r"<[^>]+>", "", spec.get("subtitle", ""))[:300]
+    plain_title = html.unescape(re.sub(r"<[^>]+>", "", title))
+    plain_desc = html.unescape(re.sub(r"<[^>]+>", "", spec.get("subtitle", "")))[:300]
     page = (page.replace("__TITLE__", html.escape(plain_title))
                 .replace("__DESCRIPTION__", html.escape(plain_desc, quote=True))
                 .replace("__GENERATED_COMMENT__", f"Generated {gen_txt} ({gen_iso})")

@@ -55,8 +55,8 @@ same penguin species around Palmer Station, Antarctica. Their scripts are in
 
 | Map | Chart page | A page built over several requests |
 |---|---|---|
-| [![Map archetype on desktop and phone](docs/img/map.jpg)](https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/map-archetype-penguin-records-around-palmer-station-2026-10-13.html) | [![Chart archetype on desktop and phone](docs/img/chart.jpg)](https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-13.html) | [![Exploration archetype on desktop and phone](docs/img/living.jpg)](https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/exploration-archetype-palmer-penguins-built-step-step-2026-10-13.html) |
-| [Open the live map](https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/map-archetype-penguin-records-around-palmer-station-2026-10-13.html) | [Open the live chart page](https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-13.html) | [Open the live page](https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/exploration-archetype-palmer-penguins-built-step-step-2026-10-13.html) |
+| [![Map archetype on desktop and phone](docs/img/map.jpg)](https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/map-archetype-penguin-records-around-palmer-station-2026-10-13.html) | [![Chart archetype on desktop and phone](docs/img/chart.jpg)](https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-27.html) | [![Exploration archetype on desktop and phone](docs/img/living.jpg)](https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/exploration-archetype-palmer-penguins-built-step-step-2026-10-27.html) |
+| [Open the live map](https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/map-archetype-penguin-records-around-palmer-station-2026-10-13.html) | [Open the live chart page](https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-27.html) | [Open the live page](https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/exploration-archetype-palmer-penguins-built-step-step-2026-10-27.html) |
 
 What every page gets, without being asked:
 
@@ -72,6 +72,9 @@ What every page gets, without being asked:
   into cards. Pages are checked so they never scroll sideways on a phone.
 - **Living pages:** a new request adds its panels to the top of the current page, each with when it was
   added; obsolete or wrong panels come off with the reason kept in a page history.
+- **One link per plot:** every chart and every map on a page also has its own page, with a **Full screen**
+  button (the plot alone, as large as the screen allows) and a **Copy link** button, so a single plot can be
+  sent on its own.
 - **Maps you can pan and zoom** (MapLibre GL JS): satellite, aerial and street base maps, layer filters
   with counts, "places to look" tabs, and maps as panels inside chart pages.
 - **Published automatically and linked in every reply:** open by default, with an optional PIN gate.

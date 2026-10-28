@@ -12,7 +12,9 @@ USE
     import sys; sys.path.insert(0, "<skill base directory>/scripts")
     import vizkit as vk
     body = vk.section("Title", vk.hbar(rows, series, unit="%"))
-    Path("page.html").write_text(vk.page("Page title", body, lede="...", sources=[...], footer="..."))
+    vk.write_page("page.html", vk.page("Page title", body, lede="...", sources=[...], footer="..."))
+    (write_page also writes panels/<page-slug>/: one page per chart card and map panel, the targets of their
+    Full screen and Copy link buttons. Do not use Path.write_text for a page that has vk.card(...) panels.)
 
     Components: page, section, note, stat_tiles, legend, hbar, columns, line_chart, heatmap, table.
     Helpers:    fint, fpct, fnum, ramp_color, RAMPS, SERIES.
@@ -24,8 +26,12 @@ USE
 """
 from __future__ import annotations
 
+import hashlib
 import html
+import itertools
 import math
+import os
+import re
 from typing import Iterable, Sequence
 
 esc = html.escape
@@ -132,6 +138,13 @@ def brand_strip() -> str:
     return f'<div class="brand">{orgs}{ghl}</div>'
 
 _STOP = {"a", "an", "the", "of", "in", "on", "with", "for", "and", "to", "from", "by", "at", "all", "its", "as"}
+_FOLD = str.maketrans({"ß": "ss", "ø": "o", "Ø": "O", "æ": "ae", "Æ": "AE", "œ": "oe", "Œ": "OE", "ł": "l", "Ł": "L",
+                       "đ": "d", "Đ": "D", "ð": "d", "Ð": "D", "þ": "th", "Þ": "Th"})     # letters NFKD does not take apart
+
+
+def _strip_tags(s: str) -> str:
+    """Plain text of an HTML snippet: real tags dropped (a bare '<' as in 'p < 0.05' stays), entities decoded, spaces collapsed."""
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"</?[A-Za-z][^>]*>", " ", s or ""))).strip()
 
 
 def slug(title: str, max_len: int = 200) -> str:
@@ -141,7 +154,7 @@ def slug(title: str, max_len: int = 200) -> str:
     numbers, cuts at a word boundary under max_len."""
     import re as _re
     import unicodedata as _ud
-    t = _re.sub(r"[\u2010-\u2015\u2212]", "-", _re.sub(r"<[^>]+>", " ", title))      # en/em dashes, minus -> '-'
+    t = _re.sub(r"[\u2010-\u2015\u2212]", "-", _strip_tags(title)).translate(_FOLD)      # en/em dashes, minus -> '-'
     t = _ud.normalize("NFKD", t).encode("ascii", "ignore").decode().lower()
     t = _re.sub(r"(?<=\d),(?=\d{3})", "", t).replace("&", " and ").replace("%", " pct ")
     words = [w for w in _re.split(r"[^a-z0-9.]+", t) if w and w not in _STOP]
@@ -317,6 +330,15 @@ table.hm td.x{font-size:13px;color:var(--ink-2);padding:0 8px;text-align:right;w
 .hm-c.dk{color:#0B0B0B} .hm-c.lt{color:#FFFFFF} .hm-c.empty{background:var(--empty);color:var(--ink-3)}
 /* an interactive map as a panel in a chart page (map_panel) */
 .mapframe{display:block;width:100%;height:var(--h,520px);border:1px solid var(--line);border-radius:10px;background:var(--bg);margin-top:10px}
+.maplink{display:flex;justify-content:flex-end;margin:10px 0 -2px}
+.mapopen{font-size:13px;font-weight:500;color:var(--accent);text-decoration:none;border:1px solid var(--line-2);border-radius:999px;padding:4px 12px;background:var(--surface)}
+.mapopen:hover,.mapopen:focus-visible{background:var(--accent-soft)}
+.ptools{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin:10px 0 0}
+.pbtn{font:500 12.5px var(--f-sans);color:var(--accent);background:var(--surface);border:1px solid var(--line-2);border-radius:999px;padding:4px 11px;text-decoration:none;cursor:pointer;white-space:nowrap}
+.pbtn:hover,.pbtn:focus-visible{background:var(--accent-soft)}
+.pbtn.ok{color:var(--ink);background:var(--accent-soft)}
+.backlink{color:var(--ink-2);text-decoration:none;text-transform:none;letter-spacing:0;font:500 13px var(--f-sans)}
+.backlink:hover{text-decoration:underline}
 @media (max-width:560px){.mapframe{height:var(--ph,440px)}}
 /* shaded table cells (table(shade=...)) and flagged cells (a cell dict with "flag") */
 table.tb td.sh{font-variant-numeric:tabular-nums}
@@ -400,6 +422,7 @@ footer.site ul{padding-left:18px;margin:0 0 12px} footer.site li{margin:4px 0}
 .brand .gh{max-width:none}
 .brand .gh a{font-family:var(--f-mono);font-size:12.5px;white-space:nowrap}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+@media print{.ptools,.maplink,.themebtn,.langseg{display:none!important}}
 """
 
 TIP_JS = r"""
@@ -431,7 +454,8 @@ TIP_JS = r"""
     el.addEventListener('mouseleave', () => { if(pinned !== el) tip.style.display = 'none'; });
     el.addEventListener('focus', () => show(el));
     el.addEventListener('blur', () => { if(pinned !== el) tip.style.display = 'none'; });
-    el.addEventListener('click', e => { e.stopPropagation(); if(pinned === el){ hide(); return; } pinned = el; show(el); });
+    el.addEventListener('click', e => { if(el.classList.contains('pbtn')) return;       // a button just acts; its hover tip is enough
+      e.stopPropagation(); if(pinned === el){ hide(); return; } pinned = el; show(el); });
   });
   document.addEventListener('click', hide);
   addEventListener('scroll', () => { if(!pinned) tip.style.display = 'none'; else place(pinned); }, {passive:true});
@@ -465,6 +489,18 @@ TIP_JS = r"""
     if(btns) btns.prepend(seg); else sc.prepend(seg);
     setLang(sc, 'plain'); });
   document.querySelectorAll('iframe.mapframe').forEach(f => f.addEventListener('load', syncFrames));
+  // "Copy link" buttons (every chart card and map panel has one): copy the absolute web address of the panel's own page
+  document.querySelectorAll('[data-copy]').forEach(b => { const label = b.textContent; let timer = null;
+    const flash = (t, ok) => { b.textContent = t; b.classList.toggle('ok', !!ok); clearTimeout(timer);
+      timer = setTimeout(() => { b.textContent = label; b.classList.remove('ok'); }, t === label ? 0 : 1800); };
+    b.addEventListener('click', () => {
+      const url = new URL(b.dataset.copy || location.href.split('#')[0], location.href).href;
+      if(location.protocol === 'file:'){ flash('Publish first: this is a local file'); return; }   // a local preview has no web address to share yet
+      const fallback = () => { const ta = document.createElement('textarea'); ta.value = url; ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0'; document.body.appendChild(ta); ta.select();
+        let ok = false; try { ok = document.execCommand('copy'); } catch(e){} document.body.removeChild(ta);
+        if(ok) flash('✓ Copied', true); else window.prompt('Copy this link', url); };
+      if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(url).then(() => flash('✓ Copied', true), fallback); else fallback(); }); });
   const tb = document.getElementById('themebtn');
   if(tb) tb.addEventListener('click', () => { const r = document.documentElement;
     const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
@@ -586,14 +622,23 @@ def _tick_label(v, unit, compact: bool = False):
 def page(title: str, body: str, *, subtitle: str = "", eyebrow: str = "", lede: str = "", how_to_read: str = "",
          tiles: str = "", sources: Iterable[str] = (), footer: str = "", noindex: bool = False,
          theme_toggle: bool = True, author: str | None = None, affiliation: str | None = None,
-         byline_when: str | None = None, extra_head: str = "") -> str:
+         byline_when: str | None = None, extra_head: str = "", _meta: bool = True) -> str:
     """A full, self-contained page. (For iterative work use living_page(), which builds on this.)
     title:    short, date at the end (vk.today()): "Penguin body mass by species and sex · 2026-10-13".
     subtitle: the detail (cohort, counts, years, measure, split, what is new in this iteration).
     `how_to_read` is shown as a callout under the lede. The generation time is written into the file
     (<meta name="generated">, a comment on line 2) and shown in the byline."""
     gen_iso, gen_txt = generated_iso(), built_at()
-    plain_sub = __import__("re").sub(r"<[^>]+>", "", subtitle)
+    if _meta:                                       # remember this page for the panel pages write_page() writes beside it
+        pslug = slug(title) or "page"
+        _PAGE_METAS[pslug] = dict(title=title, subtitle=subtitle, eyebrow=eyebrow, sources=list(sources), footer=footer,
+                                  author=author, affiliation=affiliation, noindex=noindex)
+        _STATE["pages"] += 1
+        for k in _keys_in(body):                    # the panels in this body belong to this page, whatever its title or links say
+            if k in _REG:
+                _REG[k].setdefault("pages", {})[pslug] = _PAGE_METAS[pslug]
+        body = body.replace(PANELS_TOKEN, f"panels/{pslug}")
+    plain_sub = _strip_tags(subtitle)
     head_note = note("How to read this page", how_to_read) if how_to_read else ""
     src = "".join(f"<li>{s}</li>" for s in sources)
     robots = '<meta name="robots" content="noindex,nofollow">' if noindex else ""
@@ -601,9 +646,9 @@ def page(title: str, body: str, *, subtitle: str = "", eyebrow: str = "", lede: 
     return f"""<!doctype html>
 <!-- Generated {gen_txt} ({gen_iso}) -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{esc(title)}</title>{robots}
+<title>{esc(_strip_tags(title))}</title>{robots}
 <meta name="description" content="{esc(plain_sub, quote=True)}">
-<meta name="generated" content="{gen_iso}">{head_icon_tags(__import__("re").sub(r"<[^>]+>", "", title), plain_sub)}{extra_head}
+<meta name="generated" content="{gen_iso}">{head_icon_tags(_strip_tags(title), plain_sub)}{extra_head}
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="{FONTS}">
 <style>{CSS}</style></head>
@@ -626,10 +671,21 @@ def note(title: str, html_body: str) -> str:
 
 
 def card(body: str, *, title: str = "", caption: str = "", source: str = "", tip: str = "",
-         checks: Sequence[str] | None = None) -> str:
+         checks: Sequence[str] | None = None, standalone: bool = True, panel_id: str | None = None) -> str:
     """White panel around one chart: optional title (tip= explains the chart as a whole on hover), a caption
     (may be vk.dual(plain, technical)), a source line, and checks=: the rigor pass for this panel
-    (references/rigor.md), one line per point checked, shown under the panel as "How this panel was checked"."""
+    (references/rigor.md), one line per point checked, shown under the panel as "How this panel was checked".
+
+    Every card also gets its OWN page (Carlo, 2026-10-27), so one panel can be sent on its own: the card shows two
+    buttons, "Full screen" (the panel alone, as large as the screen allows, in a new tab) and "Copy link" (copies that
+    page's web address). The pages are written beside the chart page by vk.write_page, never by dest.write_text, and
+    only for cards that are on the page. A panel page's file name has no date, so its link stays the same when the
+    panel is updated: it is panel_id= if given (a living panel uses its id), else a slug of the title; duplicates get -2,
+    -3 in page order. Give every card a specific title: it names the panel page's browser tab ("<card title> —
+    <page title> · <date>"; an untitled card is "Panel 1", "Panel 2"), and untitled or same-titled cards get names
+    that depend on their order, so give those a panel_id=.
+    standalone=False leaves the buttons off (only for a card that is not a visualization).
+    A card holding a map panel uses the map's own page instead."""
     t = f"<h3{_ta(tip)}>{title}</h3>" if title else ""
     c = f'<p class="cap">{caption}</p>' if caption else ""
     s = f'<p class="src">{source}</p>' if source else ""
@@ -637,7 +693,27 @@ def card(body: str, *, title: str = "", caption: str = "", source: str = "", tip
     if checks:
         ck = ('<details class="checks"><summary>How this panel was checked</summary><ul>' +
               "".join(f"<li>{x}</li>" for x in checks) + "</ul></details>")
-    return f'<div class="card">{t}{c}{body}{s}{ck}</div>'
+    tools, mark = "", ("" if standalone else "<!--nopanel-->")
+    if standalone:
+        m = re.search(r'<div class="maplink"><a class="mapopen" href="([^"]+)".*?</a></div>', body, re.S)
+        if m:                                              # a map card: its own page is the map's page, named after this card
+            body = body.replace(m.group(0), "")
+            for k in _keys_in(m.group(1)):
+                if k in _REG:
+                    r = _REG[k]
+                    r["card_title"] = title
+                    if panel_id and _safe_id(panel_id):
+                        r.update(stem=_safe_id(panel_id), explicit=True)
+                    elif not r["explicit"] and slug(title, 60):
+                        r["stem"] = slug(title, 60) if "map" in slug(title, 60).split("-") else slug(title, 60) + "-map"
+            tools = _tools(m.group(1))
+        else:
+            key = _new_key()
+            stem = _safe_id(panel_id) if panel_id else ""
+            tools = _tools(f"{PANELS_TOKEN}/@{key}@.html")
+            _REG[key] = {"kind": "card", "title": title, "stem": stem or slug(title, 70) or "panel", "explicit": bool(stem),
+                         "page_card": f'<div class="card">{t}{c}{tools}{body}{s}{ck}</div>'}      # the panel page's card is derived from this
+    return f'<div class="card">{mark}{t}{c}{tools}{body}{s}{ck}</div>'
 
 
 def stat_tiles(tiles: Sequence[dict]) -> str:
@@ -678,7 +754,7 @@ def hbar(rows: Sequence[dict], series: Sequence[dict], *, unit: str = "%", decim
            if d and d.get("v") is not None]                     # a bar may have no interval (hi None)
     lo, hi = domain or (0, max(his + ([ref] if ref is not None else [])) * 1.02 if vals else 1)
     ticks = _nice_ticks(lo, hi)
-    hi = max(hi, ticks[-1])
+    hi = max(hi, ticks[-1]) or 1                                 # all values 0: a 0-1 scale, not a division by zero
     pos = lambda v: (v - lo) / (hi - lo) * 100
     grid = "".join(f'<i class="grid" style="left:{pos(t):.2f}%"></i>' for t in ticks)
     refl = f'<i class="ref" style="left:{pos(ref):.2f}%"></i>' if ref is not None else ""
@@ -875,19 +951,139 @@ def ramp_key(lo_label: str, hi_label: str, ramp="heat", steps: int = 9, empty_la
             f'<span class="nw">{hi_label}</span></span>{e}</div>')
 
 
-def map_panel(spec, base=None, *, height: int = 520, phone_height: int = 440, label: str = "Interactive map") -> str:
-    """An interactive map as one panel of a chart page, next to the bars, lines and tables.
+# ---- every chart card and every map panel also gets its OWN page (Carlo, 2026-10-27) ------------------------------
+# card() and map_panel() register what they drew under a key and put a placeholder name (@<key>@.html) in their links;
+# page() records the page's settings; write_page() gives each panel page its final file name (in page order, from the
+# panel id or title; a living panel keeps its old names), writes the page and, beside it, panels/<page-slug>/<name>.html
+# for each panel, and stamps each link and its panel page with the same build id so check_page can see a stale one.
+PANELS_TOKEN = "@@PANELS@@"
+_KEY = r"[0-9a-f]+-\d+"
+_PH = re.compile(r"@(" + _KEY + r")@\.html")           # a placeholder panel-page name, resolved by write_page
+_REG: dict[str, dict] = {}                              # key -> what the card or map panel needs to write its own page
+_SEQ = itertools.count(1)
+_PAGE_METAS: dict[str, dict] = {}                       # page slug -> settings of the page (set by page())
+_STATE = {"pages": 0, "writes": 0}
+
+
+def _new_key() -> str:
+    return f"{os.getpid():x}-{next(_SEQ)}"
+
+
+def _keys_in(html_: str) -> list[str]:
+    """Placeholder keys in the order they appear (each once)."""
+    return list(dict.fromkeys(m.group(1) for m in _PH.finditer(html_)))
+
+
+def _safe_id(s: str, n: int = 70) -> str:
+    """A file-name stem from an id: letters folded to ASCII, lower case, runs of other characters -> '-'. May be empty."""
+    import unicodedata as _ud
+    t = _ud.normalize("NFKD", (s or "").translate(_FOLD)).encode("ascii", "ignore").decode().lower()
+    return re.sub(r"[^a-z0-9]+", "-", t).strip("-")[:n].strip("-")
+
+
+def _unique_name(stem: str, taken) -> str:
+    """stem.html, or stem-2.html, stem-3.html ... that is not in `taken`."""
+    name, k = f"{stem}.html", 2
+    while name in taken:
+        name, k = f"{stem}-{k}.html", k + 1
+    return name
+
+
+def _panel_files(html_: str) -> list[str]:
+    """File names of the panel pages that a piece of HTML links to (its data-companion links), placeholders left out."""
+    return [f for f in (h.rsplit("/", 1)[-1] for h in re.findall(r'data-companion="([^"]+)"', html_)) if not _PH.fullmatch(f)]
+
+
+def _core_title(title: str) -> str:
+    """A page title as plain text, without tags or its trailing ' · YYYY-MM-DD'."""
+    return re.sub(r"\s*[·—–-]\s*\d{4}-\d{2}-\d{2}\s*$", "", _strip_tags(title)).strip()
+
+
+_LIVING_RX = re.compile(r'<script type="application/json" id="vk-living">(.*?)</script>', re.S)
+
+
+def _living_meta(page_html: str) -> dict:
+    """The settings block of a living page (title, history, retired panel-page names), {} for any other page."""
+    import json
+    m = _LIVING_RX.search(page_html or "")
+    try:
+        return json.loads(m.group(1).replace("<\\/", "</")) if m else {}
+    except ValueError:
+        return {}
+
+
+def _tools(href: str | None, *, full: bool = True) -> str:
+    """The two buttons next to a panel: open it on its own page (as large as the screen allows) and copy that page's
+    web address. href is the panel page, relative to the page (a placeholder until write_page names it);
+    href=None means 'this page' (used on the panel page itself: copy this page's address). Full screen opens with
+    rel="opener" (the page and the panel page are on the same site) so a PIN-gated page's unlocked key goes with it."""
+    copy = (f'<button type="button" class="pbtn pcopy" data-copy="{esc(href or "", quote=True)}"' +
+            _ta(tip("Copy the web address of this panel's own page",
+                    "Paste it into an email or chat to send this one panel on its own.",
+                    "The address points at the published copy of the panel, not at the whole page.")) + '>⧉ Copy link</button>')
+    big = ""
+    if full and href:
+        big = (f'<a class="pbtn pfull" href="{esc(href, quote=True)}" target="_blank" rel="opener" data-companion="{esc(href, quote=True)}"' +
+               _ta(tip("Open this panel on its own page",
+                       "The panel alone, as large as the screen allows, in a new tab. You can interact with it there as you can here.")) + '>⤢ Full screen</a>')
+    return f'<div class="ptools" role="group" aria-label="This panel on its own page">{big}{copy}</div>'
+
+
+def _snapshot_map_files(spec: dict, base):
+    """Copy the files a map spec names (layer data, raster images) into a private temporary folder, rewrite the spec to
+    point at the copies, and return that folder: the map's own page is built later (write_page) and must show the data
+    as they were when map_panel ran, even if a script reuses or deletes the file in between. A shapefile comes with its
+    sidecar files (.shx, .dbf, .prj ...), a folder dataset (.gdb) as a whole."""
+    import shutil
+    import tempfile
+    from pathlib import Path as _P
+    snap = _P(tempfile.mkdtemp(prefix="vk_map_"))
+    __import__("atexit").register(shutil.rmtree, snap, ignore_errors=True)
+    for i, L in enumerate(spec.get("layers", [])):
+        for k in ("file", "image"):
+            if L.get(k):
+                src = (_P(base) / L[k]).resolve()
+                (snap / str(i)).mkdir(exist_ok=True)
+                if src.is_dir():
+                    shutil.copytree(src, snap / str(i) / src.name)
+                else:
+                    for sib in src.parent.glob(src.stem + ".*"):          # same name, other extensions: shapefile sidecars
+                        if sib.is_file():
+                            shutil.copy2(sib, snap / str(i) / sib.name)
+                    if not (snap / str(i) / src.name).exists():
+                        shutil.copy2(src, snap / str(i) / src.name)
+                L[k] = f"{i}/{src.name}"
+    return snap
+
+
+def map_panel(spec, base=None, *, height: int = 520, phone_height: int = 440, label: str = "Interactive map",
+              standalone: bool = True, name: str | None = None, standalone_title: str | None = None,
+              standalone_subtitle: str | None = None, standalone_spec: dict | None = None,
+              link_label: str = "Open this map in its own tab") -> str:
+    """An interactive map as one panel of a chart page, and the same map as its OWN page.
 
     spec: path to a map spec JSON (the same format as a standalone map: references/map-spec.md; file paths
           inside it are relative to the spec), or a spec dict with base= the folder its paths are relative to.
           title / subtitle / sources are not shown in the panel: put the title and caption on the card around
           it (vk.card) and the map's data sources in the page's sources. Optional "panel_title" names the key.
-    The map is built by build_map in panel mode and inlined (iframe srcdoc), so the page stays one file and
+    The panel is built by build_map in panel mode and inlined (iframe srcdoc), so the page stays one file and
     a PIN gate covers the map too. In the panel: two fingers (phone) or Ctrl + scroll (desktop) move the map,
     so the page scrolls past it normally; a fullscreen button; the key folds away on a phone; the page's
-    light / dark switch carries into the map. Keep embedded maps light (a few MB): for a heavy map, publish a
-    standalone map page and link to it from a card instead.
+    light / dark switch carries into the map.
+
+    The same spec is also built as a full page (title, byline, the page's sources, a link back, a Copy link button)
+    written beside the page by vk.write_page(dest, page_html) as panels/<page-slug>/<name>.html. The card around the
+    map shows the two panel buttons for it: "Full screen" opens that page, "Copy link" copies its address. name= is the
+    file's short name (slugged, with -map added unless it already says map; default: the card's title, else the label; a card's panel_id=
+    or a living panel's id wins); standalone_title= / standalone_subtitle=
+    override its title and subtitle (a title that does not end with a date gets " — <page title> · <date>" added; the
+    default is the card's title); standalone_spec= lets the own-tab map carry more than the panel (a heavy
+    building-outline layer, say; the map's page has the chart page's access, so private data stay out of it).
+    standalone=False skips the map's own page; the card around the map (vk.card) then gets an ordinary panel page
+    that holds the same embedded map, without any standalone_spec extras.
+    The own-page file name has no date (the link survives updates); two maps never share a name (-2, -3).
     """
+    import copy
     import json
     import sys as _sys
     from pathlib import Path as _P
@@ -898,11 +1094,256 @@ def map_panel(spec, base=None, *, height: int = 520, phone_height: int = 440, la
     if isinstance(spec, (str, _P)):
         sp = _P(spec).resolve()
         spec, base = json.loads(sp.read_text()), sp.parent
-    doc, _layers, warns = build_map.build_page(spec, _P(base or "."), embed=True)
+    base = _P(base or ".")
+    doc, _layers, warns = build_map.build_page(copy.deepcopy(spec), base, embed=True)
     for w in warns:
         print("map_panel: WARNING:", w)
-    return (f'<iframe class="mapframe" title="{esc(label, quote=True)}" allow="fullscreen" allowfullscreen '
-            f'style="--h:{height}px;--ph:{phone_height}px" srcdoc="{esc(doc, quote=True)}"></iframe>')
+    link = ""
+    if standalone:
+        key = _new_key()
+        stem = slug(name or label, 60) or "map"
+        if "map" not in stem.split("-"):
+            stem += "-map"
+        own = copy.deepcopy(standalone_spec if standalone_spec is not None else spec)
+        base = _snapshot_map_files(own, base)             # the map's own page is built at write_page: from the data as it is now
+        _REG[key] = {"kind": "map", "stem": stem, "explicit": bool(name), "spec": own, "base": base, "title": standalone_title,
+                     "subtitle": standalone_subtitle, "label": label, "card_title": None}
+        href = f"{PANELS_TOKEN}/@{key}@.html"
+        link = (f'<div class="maplink"><a class="mapopen" href="{href}" target="_blank" rel="opener" data-companion="{href}"' +
+                _ta(tip("Open this map in its own tab", "The same map as its own page: more room, and a link you can share.")) +
+                f'>{esc(link_label)} ↗</a></div>')
+    return link + (f'<iframe class="mapframe" data-own-page="{1 if standalone else 0}" title="{esc(label, quote=True)}" allow="fullscreen" allowfullscreen '
+                   f'style="--h:{height}px;--ph:{phone_height}px" srcdoc="{esc(doc, quote=True)}"></iframe>')
+
+
+FOCUS_HEAD = ('<meta name="vk-panel-page" content="1"><style>'
+              '@media (min-width:700px){html body .wrap{max-width:max(1080px,min(2200px,97vw))!important}}'    # never narrower than the page
+              'html body .focus .card{max-width:none!important}'
+              '@media (min-width:1200px) and (min-height:600px){'       # blow the plot up on a big screen only; smaller screens keep the page's sizes
+              'html body .focus .card .cols{height:clamp(420px,66vh,1100px)!important}'
+              'html body .focus .card .hb .brow,html body .focus .card .hb .bar{height:clamp(20px,3.6vh,40px)}'
+              'html body .focus .card table.hm{width:100%}'
+              'html body .focus .card table.hm td.c{height:clamp(50px,8vh,100px)}'
+              'html body .focus .card table.hm td.c b{font-size:clamp(16px,2.4vh,24px)}'
+              'html body .focus .card .scroll{max-height:84vh}'
+              'html body .focus .card .svgwrap svg{max-height:80vh}}'
+              'html body .focus .card .cols .gl span{z-index:3;background:var(--surface);padding:0 3px;border-radius:3px}'
+              'html body .focus .card .cols .cv{z-index:4}'
+              'html body .focus .card .cap,html body .focus .card .cap + .ptools{font-size:15.5px}'
+              '</style>')
+
+_NESTED_TOOLS = re.compile(r'<div class="ptools"(?:(?!</div>).)*?data-companion(?:(?!</div>).)*?</div>|<div class="maplink">.*?</div>', re.S)
+
+
+def _rebase_links(card_html: str, page_name: str = "") -> str:
+    """A card moves from the page to panels/<page-slug>/: its relative links and images get ../../ in front (both quote
+    styles, srcset too), and a #link to a place on the page that is not in the card points back at the page."""
+    keep = re.compile(r"(?:[A-Za-z][A-Za-z0-9+.-]*:|//|/|@@)")
+
+    def one(v: str) -> str:
+        if v.startswith("#"):
+            frag = v[1:]
+            inside = frag and (f'id="{frag}"' in card_html or f"id='{frag}'" in card_html or f'name="{frag}"' in card_html)
+            return v if (not frag or inside or not page_name) else f"../../{page_name}{v}"
+        return v if (not v or keep.match(v)) else "../../" + v
+    card_html = re.sub(r"""(\s(?:href|src))=(["'])(.*?)\2""", lambda m: f"{m.group(1)}={m.group(2)}{one(m.group(3))}{m.group(2)}", card_html)
+
+    def srcset(m):
+        if "data:" in m.group(3):
+            return m.group(0)
+        parts = [x.strip() for x in m.group(3).split(",") if x.strip()]
+        fixed = []
+        for x in parts:
+            u, _, rest = x.partition(" ")
+            fixed.append((one(u) + (" " + rest if rest else "")))
+        return f"{m.group(1)}={m.group(2)}{', '.join(fixed)}{m.group(2)}"
+    return re.sub(r"""(\ssrcset)=(["'])(.*?)\2""", srcset, card_html)
+
+
+def _map_title(rec: dict, core: str) -> str:
+    """Title of a map's own page: the author's standalone_title (kept as is when it ends with a date), else the card's
+    title, else the spec's, else the map's label; '<that> — <page title> · <date>'."""
+    base = _strip_tags(rec.get("title") or rec.get("card_title") or rec["spec"].get("title") or rec.get("label") or "Map")
+    if re.search(r"\b20\d\d-[01]\d-[0-3]\d$", base):
+        return esc(base)
+    return f"{esc(base)} — {esc(core)} · {today()}"
+
+
+def write_page(dest, page_html: str) -> list:
+    """Write a chart page and, beside it, one page per chart card and per map panel (panels/<page-slug>/...): the
+    targets of each panel's "Full screen" and "Copy link" buttons. Use this instead of dest.write_text(page), after
+    vk.page(...) / living_page(...) built page_html. It gives each panel page its final name (see card()), writes only the
+    panels that are on the page, and stamps links and panel pages with one build id (check_page compares them).
+    Build the cards and write the page in the same process. Returns [page, *panel pages]; publish.py publishes them
+    with the page. For a living page it also removes the panel pages of panels taken off the page and prints, for each, the
+    --remove argument to add when you publish. Do not edit page_html between vk.page() and write_page: the panel pages
+    show the cards as vk.card() built them (a warning says so if the page's card was changed)."""
+    import copy
+    import json
+    import sys as _sys
+    from pathlib import Path as _P
+    here = str(_P(__file__).resolve().parent)
+    if here not in _sys.path:
+        _sys.path.insert(0, here)
+    import build_map
+    _STATE["writes"] += 1
+    dest = _P(dest)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    keys = _keys_in(page_html)
+    lm = _living_meta(page_html)
+    fixed = list(dict.fromkeys(_panel_files(page_html)))                   # panel pages already named (panels carried over)
+    recs = {}
+    for k in keys:
+        if k not in _REG:
+            raise RuntimeError(f"write_page: the page links a panel page (@{k}@) that this process did not build: build the cards "
+                               "and write the page in one process, and build them again if the page was already written")
+        recs[k] = _REG[k]
+    # the folder page() put into this html's own placeholder links says which page these panels were built for (a link to
+    # somebody else's panel in a lede or the sources is not a placeholder and is never used for this)
+    m = re.search(r'data-companion="panels/([^/"]+)/@' + _KEY + r'@\.html"', page_html)
+    pslug = m.group(1) if m else None
+    meta = None
+    if keys:
+        pages_ = recs[keys[0]].get("pages", {})
+        meta = pages_.get(pslug) or (next(iter(pages_.values())) if pages_ else None)
+    meta = meta or _PAGE_METAS.get(pslug) or {}
+    # the panel pages live in panels/<this page's file name without .html>/ (so two page files never share a folder); a page
+    # that already has panels keeps their folder
+    fixed_dirs = [d for d, f_ in re.findall(r'data-companion="panels/([^/"]+)/([^"/]+)"', page_html) if not _PH.fullmatch(f_)]
+    stem_ok = re.fullmatch(r"[A-Za-z0-9_-][A-Za-z0-9._-]*", dest.stem) is not None
+    pfolder = fixed_dirs[0] if fixed_dirs else (dest.stem if stem_ok else (pslug or "page"))
+    if not re.fullmatch(r"[A-Za-z0-9_-][A-Za-z0-9._-]*", pfolder):
+        raise RuntimeError(f"write_page: unusable panel folder name {pfolder!r}")
+    core = _core_title(meta.get("title") or lm.get("title") or dest.stem)
+    back = f"../../{dest.name}"
+
+    # ---- names, in page order; carried-over, retired and just-removed names are taken. An updated living panel keeps its old
+    #      name first; then panels with an explicit id/panel_id; then the rest by title
+    pend_removed, pend_updated = list(lm.get("pending_removed", [])), list(lm.get("pending_updated", []))
+    taken = set(fixed) | set(lm.get("retired", [])) | set(pend_removed)
+    names: dict[str, str] = {}
+    for k in keys:
+        pref = recs[k].get("prefer")
+        if pref and pref not in taken:
+            names[k] = pref
+            taken.add(pref)
+    taken |= set(pend_updated)                           # a name an update stopped using is not handed to a new panel
+    for explicit in (True, False):
+        for k in keys:
+            if k not in names and bool(recs[k].get("explicit")) == explicit:
+                names[k] = _unique_name(recs[k]["stem"], taken)
+                taken.add(names[k])
+
+    # ---- build every panel page, stamp the build id into its link and into the page
+    pages: dict[str, str] = {}
+    builds: dict[str, str] = {}
+    untitled = 0
+    changed = []
+    plain_page = re.sub(r'<span class="pstamp">.*?</span>', "", page_html, flags=re.S)
+    for k in keys:
+        rec = recs[k]
+        if rec["kind"] == "card":
+            own_card = re.sub(r'<div class="ptools".*?</div>', lambda _m: _tools(None), rec["page_card"], count=1, flags=re.S)
+            builds[k] = hashlib.sha1(own_card.encode("utf-8")).hexdigest()[:12]
+            if rec["page_card"].replace(PANELS_TOKEN, f"panels/{pslug}") not in plain_page:
+                changed.append(_strip_tags(rec["title"]) or "(untitled card)")
+            label = _strip_tags(rec["title"]) or None
+            if label is None:
+                untitled += 1
+                label = f"Panel {untitled}"
+            card_html = _rebase_links(_NESTED_TOOLS.sub("", own_card), dest.name)
+            pages[k] = page(f"{esc(label)} — {esc(core)} · {today()}", f'<section class="sec focus">{card_html}</section>',
+                            subtitle=f"One panel of the page “{esc(core)}”, shown on its own and as large as the screen allows.",
+                            eyebrow=f'<a class="backlink" href="{esc(back, quote=True)}">← Back to the full page</a>',
+                            sources=meta.get("sources", ()), footer=meta.get("footer", ""), author=meta.get("author"),
+                            affiliation=meta.get("affiliation"), noindex=meta.get("noindex", False),
+                            extra_head=FOCUS_HEAD + '<meta name="vk-build" content="@BUILD@">', _meta=False)
+        else:
+            sp = copy.deepcopy(rec["spec"])
+            sp["title"] = _map_title(rec, core)
+            sp["subtitle"] = rec["subtitle"] or sp.get("subtitle") or (
+                f"The interactive map from the page “{esc(core)}”, shown on its own: the same layers and key, with more room"
+                + (", and the places to look." if sp.get("sites") else "."))
+            sp["back_link"] = {"href": back, "label": f"Back to “{core}”"}
+            if meta.get("noindex"):
+                sp["noindex"] = True
+            for f_ in ("author", "affiliation"):
+                if meta.get(f_):
+                    sp.setdefault(f_, meta[f_])
+            if not sp.get("sources") and meta.get("sources"):
+                sp["sources"] = list(meta["sources"])
+            if meta.get("footer"):
+                sp.setdefault("footer", meta["footer"])
+            doc, _l, warns = build_map.build_page(sp, rec["base"], embed=False)
+            for w in warns:
+                print("map page: WARNING:", w)
+            builds[k] = hashlib.sha1(doc.encode("utf-8")).hexdigest()[:12]
+            pages[k] = doc.replace("</head>", '<meta name="vk-panel-page" content="1"><meta name="vk-build" content="@BUILD@"></head>', 1)
+    if changed:
+        print(f"vizkit: WARNING: the page's card(s) {changed} were changed after vk.card() built them, so their panel pages show the "
+              "original: change the inputs and rebuild instead of editing the page's HTML", file=_sys.stderr)
+    if pslug and pslug != pfolder:
+        page_html = re.sub(r'panels/' + re.escape(pslug) + r'/(@' + _KEY + r'@\.html)', lambda mm: f"panels/{pfolder}/{mm.group(1)}", page_html)
+    for k, name in names.items():
+        page_html = re.sub(r'(data-companion="[^"]*?)@' + re.escape(k) + r'@\.html"',
+                           lambda mm, k=k, name=name: f'{mm.group(1)}{name}" data-build="{builds[k]}"', page_html)
+        page_html = page_html.replace(f"@{k}@.html", name)
+        pages[k] = pages[k].replace("@BUILD@", builds[k])
+
+    # ---- retire: names of removed panels, and names an update stopped using, are never given to another panel
+    linked = set(names.values()) | set(fixed)
+    retire = [f for f in dict.fromkeys(pend_removed + pend_updated) if f not in linked]
+    if lm:
+        lm["retired"] = sorted(set(lm.get("retired", [])) | set(retire))
+        lm.pop("pending_removed", None)
+        lm.pop("pending_updated", None)
+        block = '<script type="application/json" id="vk-living">' + json.dumps(lm, ensure_ascii=False).replace("</", "<\\/") + "</script>"
+        page_html = _LIVING_RX.sub(lambda mm: block, page_html, count=1)
+
+    # ---- write
+    dest.write_text(page_html)
+    out = [dest]
+    folder = dest.parent / "panels" / pfolder
+    if names:
+        folder.mkdir(parents=True, exist_ok=True)
+    for k, name in names.items():
+        (folder / name).write_text(pages[k])
+        out.append(folder / name)
+
+    def ours(f):                                         # only ever touch files vizkit wrote as panel pages
+        try:
+            return f.is_file() and 'name="vk-panel-page"' in f.read_text(encoding="utf-8", errors="replace")[:80000]
+        except OSError:
+            return False
+    for f in retire:                                     # panels taken off a living page: their pages go too
+        if re.fullmatch(r"[A-Za-z0-9._-]+\.html", f) and ours(folder / f):
+            (folder / f).unlink()
+        print(f"vizkit: panel page panels/{pfolder}/{f} is no longer linked; if it was published, add this when you publish the page: "
+              f"--remove panels/{pfolder}/{f}")
+    if folder.is_dir():
+        stale = [f.name for f in sorted(folder.glob("*.html")) if f.name not in linked and f.name not in retire and ours(f)]
+        for f in stale:                                  # a retitled card (plain page) leaves its old page behind: say so, keep it
+            print(f"vizkit: panel page panels/{pfolder}/{f} is not linked by this page any more (left in place); if it was published, "
+                  f"add --remove panels/{pfolder}/{f} when you publish")
+        if meta.get("noindex"):                          # a page kept out of search engines keeps its panel pages out too
+            for name in fixed:
+                f = folder / name
+                head = f.read_text(encoding="utf-8", errors="replace") if ours(f) else ""
+                if head and 'name="robots"' not in head[:80000]:
+                    f.write_text(head.replace("</head>", '<meta name="robots" content="noindex,nofollow"></head>', 1))
+    print(f"vizkit: wrote {len(out) - 1} panel page(s) beside {dest.name} (panels/{pfolder}/)")
+    return out
+
+
+def _warn_unwritten():
+    """At exit: a page was built but write_page never ran (the panel buttons would point at nothing)."""
+    if _STATE["pages"] and not _STATE["writes"] and _REG:
+        import sys as _sys
+        print(f"vizkit: WARNING: {len(_REG)} panel page(s) were prepared but write_page never ran, so the Full screen / Copy link "
+              "buttons would point at nothing. Write the page with vk.write_page(dest, page), not dest.write_text(page).", file=_sys.stderr)
+
+
+__import__("atexit").register(_warn_unwritten)
 
 
 def _num(x):
@@ -1006,13 +1447,18 @@ _PANEL_RX = None
 
 
 def panel(body: str, *, title: str, id: str | None = None, caption: str = "", source: str = "", tip: str = "",
-          checks: Sequence[str] | None = None) -> dict:
+          checks: Sequence[str] | None = None, standalone: bool = True) -> dict:
     """One panel for living_page(): a card (title, caption, checks, source as in card()) plus an id.
     Give a short explicit id ("burned-per-year"): it is how the panel is updated (reuse the id) or removed
-    later. Without one, the id is a slug of the title (filler words dropped)."""
+    later, and it names the panel's own page (panels/<page-slug>/<id>.html), so that link stays the same when the
+    panel is updated. Without one, the id is a slug of the title (filler words dropped). standalone=False: no own page."""
     pid = id or slug(title, 60) or "panel"
-    return {"id": pid, "title": title,
-            "html": card(body, title=title, caption=caption, source=source, tip=tip, checks=checks)}
+    html_ = card(body, title=title, caption=caption, source=source, tip=tip, checks=checks, standalone=standalone, panel_id=pid)
+    stem = _safe_id(pid) or slug(title, 70) or "panel"
+    for i, k in enumerate(_keys_in(html_)):               # the panel's own pages are named from its id (a second one: id-2)
+        if k in _REG:
+            _REG[k].update(stem=stem if i == 0 else f"{stem}-{i + 1}", explicit=True)
+    return {"id": pid, "title": title, "html": html_}
 
 
 def _iso_to_txt(iso: str) -> str:
@@ -1029,7 +1475,7 @@ def _render_panel(pid: str, title: str, inner: str, created: str, updated: str |
     inner = inner.replace('<div class="card">', f'<div class="card"><span class="pstamp">{stamp}</span>', 1)
     upd = f' data-updated="{updated}"' if updated else ""
     return (f'<section class="panel" data-panel="{esc(pid, quote=True)}" data-title="{esc(title, quote=True)}" '
-            f'data-created="{created}"{upd}>{inner}</section><!--/panel:{pid}-->')
+            f'data-created="{created}"{upd}>{inner}</section><!--/panel:{esc(pid, quote=True)}-->')
 
 
 def read_living_page(src) -> tuple[dict, list[dict]]:
@@ -1046,10 +1492,12 @@ def read_living_page(src) -> tuple[dict, list[dict]]:
     meta = json.loads(m.group(1).replace("<\\/", "</")) if m else {}
     panels = []
     for pm in _re.finditer(r'<section class="panel" data-panel="([^"]+)" data-title="([^"]*)" data-created="([^"]+)"'
-                           r'(?: data-updated="([^"]+)")?>(.*?)</section><!--/panel:\1-->', txt, _re.S):
-        pid, title, created, updated, inner = pm.groups()
+                           r'(?: data-updated="([^"]+)")?>(.*?)</section><!--/panel:(.*?)-->', txt, _re.S):
+        pid, title, created, updated, inner, marker = pm.groups()
+        if html.unescape(marker) != html.unescape(pid):                 # a panel's closing marker names its id (escaped by 1.10, raw by 1.9)
+            continue
         inner = _re.sub(r'<span class="pstamp">.*?</span>', "", inner, count=1)
-        panels.append({"id": pid, "title": html.unescape(title), "html": inner, "created": created, "updated": updated})
+        panels.append({"id": html.unescape(pid), "title": html.unescape(title), "html": inner, "created": created, "updated": updated})
     return meta, panels
 
 
@@ -1077,16 +1525,25 @@ def living_page(existing=None, *, title: str | None = None, add: Sequence[dict] 
             ("subtitle", "eyebrow", "lede", "how_to_read", "tiles", "sources", "footer", "author", "affiliation", "noindex")}
     meta.setdefault("settings", {}).update({k: (list(v) if k == "sources" else v) for k, v in keep.items()})
     by_id = {p["id"]: p for p in panels}
+    ids = [np_["id"] for np_ in add]
+    if len(set(ids)) != len(ids):
+        raise ValueError(f"two panels share an id ({sorted({i for i in ids if ids.count(i) > 1})}): pass a different id= to each")
     for pid, why in (remove or {}).items():
         if pid not in by_id:
             raise ValueError(f"no panel {pid!r} on this page (have: {list(by_id)})")
         meta["history"].append({"when": now, "action": "removed", "id": pid, "title": by_id[pid]["title"], "why": why})
+        meta.setdefault("pending_removed", []).extend(_panel_files(by_id[pid]["html"]))   # exactly this panel's own pages: retired by write_page
         panels = [p for p in panels if p["id"] != pid]
         del by_id[pid]
     new_top = []
     for np_ in add:
         if np_["id"] in by_id:                                          # same chart, new version: update in place
             old = by_id[np_["id"]]
+            olds = _panel_files(old["html"])
+            for k, o in zip(_keys_in(np_["html"]), olds):               # the new page(s) keep the old names (the links already sent)
+                if k in _REG:
+                    _REG[k]["prefer"] = o
+            meta.setdefault("pending_updated", []).extend(olds)         # write_page keeps the ones the update reuses
             old.update(html=np_["html"], title=np_["title"], updated=now)
             meta["history"].append({"when": now, "action": "updated", "id": np_["id"], "title": np_["title"]})
         else:

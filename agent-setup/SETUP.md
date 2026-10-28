@@ -191,7 +191,7 @@ Run, from the installed skill folder (call it `SKILL`), telling the user what ea
    `python3 -c "import sys; sys.path.insert(0, 'SKILL/scripts'); import vizkit, publish; print(vizkit.identity_path()); print(vizkit.byline()); print(publish.REPO, publish.SITE)"`.
    Check the byline shows **their** name and the site is **their** site.
 2. **Screenshots work:**
-   `python3 SKILL/scripts/screenshot.py https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-13.html /tmp/skill-test --sizes phone`
+   `python3 SKILL/scripts/screenshot.py https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/chart-archetype-palmer-penguins-size-species-sex-2026-10-27.html /tmp/skill-test --sizes phone`
    should write `/tmp/skill-test_phone.png` with no errors. Show it to the user if you can display images.
 3. **Publishing access** (without publishing anything): clone the pages repo shallowly into a temporary
    folder and run `git push --dry-run origin HEAD:refs/heads/access-check` there. Success means they can

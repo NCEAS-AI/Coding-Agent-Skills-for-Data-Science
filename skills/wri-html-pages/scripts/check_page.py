@@ -8,6 +8,12 @@ WHY THIS EXISTS
     the question-mark cursor, a file too big for GitHub. publish.py runs this on the PLAINTEXT page
     before anything is gated or committed; errors stop the publish.
 
+    On vizkit chart pages (2026-10-27) it also checks the panel pages: a link to a panel page that was never written (or
+    still holds a placeholder name) says to use vk.write_page; a panel page must carry the same build id as the link to it
+    (an error when the page and a panel page come from different builds); each chart card should have the Full screen /
+    Copy link buttons (warning, unless the card was made with standalone=False); an embedded map built by an older vizkit
+    has no own-page marker (warning). A panel page's own title may be short: it carries the page's title.
+
 USAGE
     python check_page.py PAGE.html [PAGE.html ...] [--site-dir DIR ...] [--forbid FILE]
     Exit status 0 = no errors (warnings allowed), 1 = errors.
@@ -88,6 +94,7 @@ def check(path: Path, site_dirs=(), forbid=()) -> list[tuple[str, str]]:
         return out
     p = Links()
     p.feed(html)
+    panel_page = 'name="vk-panel-page"' in html.split("</head>", 1)[0]    # a panel's own page is itself the target of the buttons
     t = re.sub(r"\s+", " ", p.title).strip()
     if not t or t.lower() in {"document", "untitled", "page"}:
         err("missing or generic <title>")
@@ -96,9 +103,9 @@ def check(path: Path, site_dirs=(), forbid=()) -> list[tuple[str, str]]:
         # subtitle; the title also becomes the file name and the link text
         if not re.search(DATE.pattern + r"\s*$", t):
             err(f"<title> must end with the build date (… · YYYY-MM-DD): {t!r}")
-        if len(re.findall(r"[A-Za-z][\w'’-]*", DATE.sub("", t))) < 3:
+        if len(re.findall(r"[A-Za-z][\w'’-]*", DATE.sub("", t))) < 3 and not panel_page:
             err(f"<title> is too vague ({t!r}); say what the page shows in a few words")
-        if len(t) > 100:
+        if len(t) > 100 and not panel_page:
             warn(f"<title> is {len(t)} characters; keep it short and put the detail in the subtitle")
         if 'name="generated"' not in html:
             warn('no <meta name="generated"> recording when the file was built')
@@ -131,10 +138,29 @@ def check(path: Path, site_dirs=(), forbid=()) -> list[tuple[str, str]]:
     unchecked = sum('class="checks"' not in c for c in cards if '<h3' in c)
     if unchecked:
         warn(f"{unchecked} chart card(s) without a rigor pass (vk.card(checks=[...]); references/rigor.md)")
+    vt = visible_text(html)
+    if not panel_page:
+        old_maps = len(re.findall(r'<iframe class="mapframe"(?![^>]*data-own-page=)', vt))
+        if old_maps:
+            warn(f"{old_maps} map panel(s) built by an older vizkit have no page of their own (no data-own-page marker): "
+                 "rebuild with the current vizkit.map_panel and vk.write_page (on a living page, re-add the panel with the same id)")
+    plain_cards = sum('data-companion="' not in c and 'class="pcopy"' not in c and 'class="pbtn pcopy"' not in c
+                      and '<!--nopanel-->' not in c for c in cards if '<h3' in c)
+    if plain_cards and not panel_page:
+        warn(f"{plain_cards} chart card(s) without the 'Full screen' and 'Copy link' buttons (vk.card adds them; "
+             "rebuild with the current vizkit and write the page with vk.write_page; on a living page re-add the panel with the same id)")
     for rx in forbid:
         for m in sorted(set(re.findall(rx, text)))[:3]:
             err(f"forbidden term ({rx}): {m!r}")
     roots = [path.parent, *map(Path, site_dirs)]
+    for m in re.finditer(r'data-companion="([^"]+)"[^>]*?\sdata-build="([0-9a-f]+)"', vt):    # a panel page and its link come from one build
+        f = next((r / unquote(urlparse(m.group(1)).path) for r in roots if (r / unquote(urlparse(m.group(1)).path)).is_file()), None)
+        if f is None:
+            continue                                                  # a missing file is reported below
+        mb = re.search(r'name="vk-build" content="([0-9a-f]+)"', f.read_text(encoding="utf-8", errors="replace")[:60000])
+        if mb and mb.group(1) != m.group(2):
+            err(f"the panel page {m.group(1)} is from a different build than this page (older or newer): "
+                "rebuild the page with vk.write_page(dest, page) and publish all of it")
     for ref in p.refs:
         u = urlparse(ref)
         if u.scheme in ("http", "https", "mailto", "data", "javascript", "tel") or ref.startswith("//"):
@@ -147,7 +173,10 @@ def check(path: Path, site_dirs=(), forbid=()) -> list[tuple[str, str]]:
         if not target:
             continue
         if not any((r / target).exists() for r in roots):
-            err(f"relative link to a file that is not published alongside: {ref}")
+            if target.startswith("panels/") or target.startswith("@@PANELS@@"):
+                err(f"panel page not written: {ref} (build the page with vk.write_page(dest, page), not dest.write_text(page))")
+            else:
+                err(f"relative link to a file that is not published alongside: {ref}")
     return out
 
 
