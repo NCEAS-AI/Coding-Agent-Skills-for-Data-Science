@@ -342,6 +342,13 @@ table.hm td.x{font-size:13px;color:var(--ink-2);padding:0 8px;text-align:right;w
 @media (max-width:560px){.mapframe{height:var(--ph,440px)}}
 /* shaded table cells (table(shade=...)) and flagged cells (a cell dict with "flag") */
 table.tb td.sh{font-variant-numeric:tabular-nums}
+/* coloured cells carry a light and a dark colour; the theme picks one (dark mode note in vizkit.py) */
+table.tb td.sh,.ramp i.sh{background:color-mix(in srgb, var(--sh) var(--sha), transparent)}
+table.hm td.c[style],.hm-c[style],.ramp i.cv{background:var(--c);color:var(--t)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) table.tb td.sh,:root:not([data-theme="light"]) .ramp i.sh{background:color-mix(in srgb, var(--shd) var(--shda), transparent)}
+  :root:not([data-theme="light"]) table.hm td.c[style],:root:not([data-theme="light"]) .hm-c[style],:root:not([data-theme="light"]) .ramp i.cv{background:var(--cd);color:var(--td)}}
+:root[data-theme="dark"] table.tb td.sh,:root[data-theme="dark"] .ramp i.sh{background:color-mix(in srgb, var(--shd) var(--shda), transparent)}
+:root[data-theme="dark"] table.hm td.c[style],:root[data-theme="dark"] .hm-c[style],:root[data-theme="dark"] .ramp i.cv{background:var(--cd);color:var(--td)}
 table.tb td.flag{box-shadow:inset 0 0 0 2px var(--flag);font-weight:600}
 table.hm td.c.flag{outline:2.5px solid var(--flag);outline-offset:-2.5px}
 .legend .flagsw{width:18px;height:14px;border-radius:3px;box-shadow:inset 0 0 0 2px var(--flag)}
@@ -572,6 +579,47 @@ def ramp_color(v, lo, hi, ramp="heat"):
     a, b = _hex(cs[i]), _hex(cs[i + 1])
     k = f - i
     return "#%02X%02X%02X" % tuple(round(a[j] + (b[j] - a[j]) * k) for j in range(3))
+
+
+# ---- dark mode for coloured cells (Carlo, 2026-11-01) ------------------------------------------------------------
+# Light ramps run pale -> deep, which on a dark page inverts the emphasis: low values glare as near-white blocks and
+# high values sink into the background, and 30% tints of yellow/orange turn to mud. Every coloured cell therefore
+# carries a light and a dark colour (CSS variables) and the page shows the one for its theme:
+#   heatmap cells   sequential ramps use a dark ramp that runs from the card colour to a bright hue (high = bright);
+#                   judgement / diverging ramps keep their hues, mixed toward the card colour so they do not glare
+#   table tints     sequential: one bright hue whose strength grows with the value; judgement / diverging: bright hues
+#                   whose strength grows toward the ends, so the middle stays neutral instead of brown
+DARK_SURFACE = "#141B22"
+DARK_RAMPS = {
+    "blues": ["#18232E", "#1B3550", "#21497A", "#2A62A3", "#3B7FC6", "#5A9FE0", "#86BEF0", "#B3D8F8"],
+    "heat": ["#211A14", "#3A2617", "#58331A", "#7C421C", "#A4521E", "#CD6421", "#EE7E2F", "#FFA24D", "#FFC57E"],
+    "viridis": RAMPS["viridis"],
+}
+DARK_TINTS = {   # bright hues for tints on the dark card, in the same order as the light ramp
+    "good_bad": ["#2EC496", "#5CCB7A", "#9DD36A", "#D4CF5E", "#F2C14E", "#F5A24C", "#F5844F", "#F86A55", "#FF5E57"],
+    "diverging": ["#4AA3E0", "#6FBBEB", "#9CCFF0", "#C8D6E5", "#8A949E", "#E9B49A", "#F29A7C", "#F77F68", "#FF6B5E"],
+}
+_SEQUENTIAL = {"blues": "#5AAEF0", "heat": "#F59A4A"}
+
+
+def _mix(a, b, k):
+    """k of colour a, 1-k of colour b (hex)."""
+    x, y = _hex(a), _hex(b)
+    return "#%02X%02X%02X" % tuple(round(x[j] * k + y[j] * (1 - k)) for j in range(3))
+
+
+def dark_cell_color(v, lo, hi, ramp="heat"):
+    """Dark-theme colour of a solid heatmap cell (see the note above)."""
+    if isinstance(ramp, str) and ramp in DARK_RAMPS:
+        return ramp_color(v, lo, hi, DARK_RAMPS[ramp])
+    return _mix(ramp_color(v, lo, hi, ramp), DARK_SURFACE, 0.62)
+
+
+def _cell_vars(v, lo, hi, ramp):
+    """Inline CSS variables for a solid coloured cell: light and dark background and text colour."""
+    c, d = ramp_color(v, lo, hi, ramp), dark_cell_color(v, lo, hi, ramp)
+    t = lambda h: "#0B0B0B" if _is_light(h) else "#FFFFFF"
+    return f"--c:{c};--t:{t(c)};--cd:{d};--td:{t(d)}", ("dk" if _is_light(c) else "lt")
 
 
 def _is_light(hexc):
@@ -923,15 +971,14 @@ def heatmap(row_labels: Sequence[str], col_labels: Sequence[str], cells: Sequenc
                 tds.append(f'<td class="c empty"{tp}>–</td>')
                 mcs.append(f'<div class="hm-c empty"{tp}><small>{cl}</small><b>–</b></div>')
                 continue
-            col = ramp_color(c["v"], domain[0], domain[1], ramp)
-            cls = "dk" if _is_light(col) else "lt"
+            cv, cls = _cell_vars(c["v"], domain[0], domain[1], ramp)
             sub = f'<i>{c["sub"]}</i>' if c.get("sub") else ""
             tp = f' data-tip="{c["tip"]}"' if c.get("tip") else ""
             if c.get("flag"):
                 cls += " flag"
                 tp = f' data-tip="{(c.get("tip") or "")}{"&#10;" if c.get("tip") else ""}Flagged: {esc(c["flag"], quote=True)}"'
-            tds.append(f'<td class="c {cls}" style="background:{col}"{tp}><b>{c["text"]}</b>{sub}</td>')
-            mcs.append(f'<div class="hm-c {cls}" style="background:{col}"{tp}><small>{cl}</small><b>{c["text"]}</b>{sub}</div>')
+            tds.append(f'<td class="c {cls}" style="{cv}"{tp}><b>{c["text"]}</b>{sub}</td>')
+            mcs.append(f'<div class="hm-c {cls}" style="{cv}"{tp}><small>{cl}</small><b>{c["text"]}</b>{sub}</div>')
         ex = "".join(f'<td class="x">{v}</td>' for v in (extra[r] if extra else []))
         body.append(f'<tr><th class="rl"{_ta(rt[r] if r < len(rt) else None)}>{lab}</th>{"".join(tds)}{ex}</tr>')
         exm = " · ".join(f"{n} {v}" for n, v in zip(extra_cols, extra[r])) if extra else ""
@@ -945,7 +992,7 @@ def heatmap(row_labels: Sequence[str], col_labels: Sequence[str], cells: Sequenc
 
 def ramp_key(lo_label: str, hi_label: str, ramp="heat", steps: int = 9, empty_label: str = "", tip: str = "") -> str:
     cs = RAMPS[ramp] if isinstance(ramp, str) else ramp
-    sw = "".join(f'<i style="background:{ramp_color(i / (steps - 1), 0, 1, cs)}"></i>' for i in range(steps))
+    sw = "".join(f'<i class="cv" style="{_cell_vars(i / (steps - 1), 0, 1, ramp if isinstance(ramp, str) else cs)[0]}"></i>' for i in range(steps))
     e = (f'<span class="k"><span class="sw" style="background:var(--empty)"></span>{empty_label}</span>' if empty_label else "")
     return (f'<div class="legend"><span class="k"{_ta(tip)}><span class="nw">{lo_label}</span><span class="ramp">{sw}</span>'
             f'<span class="nw">{hi_label}</span></span>{e}</div>')
@@ -1350,11 +1397,33 @@ def _num(x):
     """A cell's number: its "v", or parsed from its text ('55%', '16,493', '-0.3 pts'); None if not a number."""
     import re as _re
     if isinstance(x, dict):
-        if x.get("v") is not None:
+        if "v" in x:                  # an explicit "v": None means "no number here" (never parse the text)
             return x["v"]
         x = x.get("text", "")
     m = _re.search(r"[-+−]?\d[\d,]*\.?\d*", _re.sub(r"<[^>]+>", "", str(x)))
     return float(m.group(0).replace(",", "").replace("−", "-")) if m else None
+
+
+def _shade_t(v, scale, better, domain):
+    """Position 0..1 along the (possibly reversed) shading ramp."""
+    lo, hi = domain
+    t = 0.0 if hi == lo else min(1.0, max(0.0, (v - lo) / (hi - lo)))
+    rev = better == "high" and (scale in ("good_bad", "diverging") or not isinstance(scale, str))
+    return 1 - t if rev else t
+
+
+def shade_vars(v, *, scale="good_bad", better="low", domain=None, strength=0.30):
+    """Inline CSS variables for a tinted table cell or key swatch: light tint and dark tint (see the dark-mode note)."""
+    col = shade_color(v, scale=scale, better=better, domain=domain)
+    t = _shade_t(v, scale, better, domain)
+    if isinstance(scale, str) and scale in _SEQUENTIAL:
+        dc, da = _SEQUENTIAL[scale], 0.06 + 0.40 * (v - domain[0]) / ((domain[1] - domain[0]) or 1)
+    elif isinstance(scale, str) and scale in DARK_TINTS:
+        dc, da = ramp_color(t, 0, 1, DARK_TINTS[scale]), (strength + 0.04) * (0.25 + 0.75 * abs(2 * t - 1))
+    else:
+        dc, da = col, strength
+    da = min(max(da, 0.0), 0.5)
+    return f"--sh:{col};--sha:{strength * 100:.0f}%;--shd:{dc};--shda:{da * 100:.0f}%"
 
 
 def shade_color(v, *, scale="good_bad", better="low", domain=None, mid=None):
@@ -1410,8 +1479,7 @@ def table(columns: Sequence[str], rows: Sequence[Sequence], *, numeric: Iterable
             v = _num(c) if i in doms else None
             if v is not None:
                 sp = shade[i]
-                col = shade_color(v, scale=sp.get("scale", "good_bad"), better=sp.get("better", "low"), domain=doms[i])
-                style = f' style="background:color-mix(in srgb, {col} {strength * 100:.0f}%, transparent)"'
+                style = f' style="{shade_vars(v, scale=sp.get("scale", "good_bad"), better=sp.get("better", "low"), domain=doms[i], strength=strength)}"'
                 cls.append("sh")
             if isinstance(c, dict) and c.get("flag"):
                 cls.append("flag")
@@ -1430,8 +1498,8 @@ def table(columns: Sequence[str], rows: Sequence[Sequence], *, numeric: Iterable
 def shade_key(lo_label: str, hi_label: str, *, scale="good_bad", better="low", flag: str = "",
               strength: float = 0.30, steps: int = 7, tip: str = "", flag_tip: str = "") -> str:
     """Key for a shaded table: the subtle colour run from lo_label to hi_label, plus the red box if used."""
-    sw = "".join(f'<i style="background:color-mix(in srgb, {shade_color(k / (steps - 1), scale=scale, better=better, domain=(0, 1))} '
-                 f'{strength * 100:.0f}%, transparent)"></i>' for k in range(steps))
+    sw = "".join(f'<i class="sh" style="{shade_vars(k / (steps - 1), scale=scale, better=better, domain=(0, 1), strength=strength)}"></i>'
+                 for k in range(steps))
     fl = f'<span class="k"{_ta(flag_tip)}><span class="flagsw"></span>{flag}</span>' if flag else ""
     return (f'<div class="legend"><span class="k"{_ta(tip)}><span class="nw">{lo_label}</span><span class="ramp">{sw}</span>'
             f'<span class="nw">{hi_label}</span></span>{fl}</div>')

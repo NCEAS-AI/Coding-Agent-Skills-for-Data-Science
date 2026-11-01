@@ -139,7 +139,7 @@ but a title that holds every detail is too much to read. So:
   into compact cards, or let a big table scroll with its first column and header frozen. Scrolling a
   wide table is fine; the page itself never scrolls sideways. Don't shrink text to make things fit
   (charts.md, "Phone layout").
-- **Light and dark both** (system setting, plus a toggle on chart pages). Dark is welcome.
+- **Light and dark both** (system setting, plus a toggle on chart pages). Dark is welcome. Coloured cells (heatmap tables, shaded tables, their keys) carry a light and a dark colour and the theme picks one (Carlo, 2026-11-01): on dark, high values are bright and low values sit near the card colour (a pale-to-deep ramp would invert the emphasis), and green-to-red tints keep the middle neutral instead of turning brown. vizkit does this; a hand-made coloured cell must do the same. A cell with no number passes `"v": None` so its text is never read as one.
 - **Text never overlaps lines or shapes.** Labels sit outside bars and whiskers; diagrams leave room.
 - **A "How to read this" box** for anything non-obvious: what one mark is, what the colours mean,
   what to hover. Short.
