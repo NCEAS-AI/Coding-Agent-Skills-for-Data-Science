@@ -68,6 +68,10 @@ links in another folder are kept, with a NOTE).
   page goes out open in a folder whose other pages are gated; mention that note to the user in one line.
 - Only HTML pages are encrypted. Sidecar files (`data/*.geojson`, images) are public even for a gated
   page, so keep data inline in gated pages.
+- **Branded lock screen (optional, per page):** a page can put its own logos, title and links on the PIN screen with
+  `<meta name="gate-title" content="...">` and `<script type="text/x-gate-brand">…HTML…</script>` (above the PIN box) /
+  `<script type="text/x-gate-foot">…</script>` (below it) anywhere in its plaintext; `pin_gate.gate()` copies them out.
+  The lock screen is not encrypted, so only names, logos and links go there, never data. Owner, 2026-11-02.
 - `scripts/pin_gate.py --gate IN OUT` / `--ungate IN OUT` encrypt or decrypt a single page; it is
   byte-compatible with the pipeline's `pin_gate_v2.py`, so one PIN entry opens every gated page.
 

@@ -118,6 +118,33 @@ def derive(pin: str, salt: bytes, n: int) -> bytes:
 _KEY_CACHE: dict = {}
 
 
+def brand_lock_screen(head: str, plain: str) -> str:
+    """Optional per-page branding of the lock screen (owner, 2026-11-02: a pitch page's PIN screen should look official).
+    A page opts in with, anywhere in its plaintext:
+        <meta name="gate-title" content="Browser-tab title for the lock screen">
+        <script type="text/x-gate-brand"> HTML shown above the PIN box (logos, title, links; may hold a <style>) </script>
+        <script type="text/x-gate-foot"> HTML shown under the PIN box </script>
+    The lock screen is NOT encrypted: put only what may be public there (names, logos, links), never data.
+    Pages without these keep the plain "Enter PIN" screen."""
+    import re
+    def block(kind):
+        m = re.search(r'<script type="text/x-gate-' + kind + r'"[^>]*>(.*?)</script>', plain, re.S)
+        return m.group(1).strip() if m else ""
+    brand, foot = block("brand"), block("foot")
+    t = re.search(r'<meta name="gate-title" content="([^"]*)"', plain)
+    if t:
+        head = head.replace("<title>Protected page</title>", f"<title>{t.group(1)}</title>", 1)
+    if brand:
+        default = "<h1>Enter PIN</h1><p>This page is shared privately.</p>"
+        assert head.count(default) == 1
+        head = head.replace(default, brand, 1)
+    if foot:
+        end = '<div class="err" id="err" role="alert"></div></form>'
+        assert head.count(end) == 1
+        head = head.replace(end, end + foot, 1)
+    return head
+
+
 def gate(plain: str, pin: str) -> str:
     """Encrypt one page under the site key (derived once per process) with a fresh IV."""
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -129,6 +156,7 @@ def gate(plain: str, pin: str) -> str:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from vizkit import head_icon_tags      # flame icon + link-preview image only: no title or description leaks out
     head = HEAD.replace("<title>Protected page</title>", "<title>Protected page</title>" + head_icon_tags(), 1)
+    head = brand_lock_screen(head, plain)
     # the gate's own variables live inside a function: once the page is decrypted and written over this document
     # (same window), a page that declares its own `const C` (a map page) must not collide with them
     return head + f'(function() {{ var S="{SITE_SALT_B64}", I="{b(iv)}", C="{b(ct)}", N={ITERATIONS};' + TAIL

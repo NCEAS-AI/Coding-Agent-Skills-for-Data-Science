@@ -46,7 +46,8 @@ Common fields: `id` (letters, digits, `-`, `_`), `name` (shown in the key), `kin
 `visible` (default true), `minzoom` / `maxzoom`, `fit` (include in the start extent; default true;
 set false for e.g. a region outline far bigger than the fire), `in_key` (false hides it from the key),
 `show_count` (false hides the feature count), `keep` (extra property names to keep in the page),
-`allow_empty`, `description_tech` (technical version of the description).
+`allow_empty`, `description_tech` (technical version of the description), `exclusive` (a group name: layers sharing it
+act like radio buttons, so ticking one unticks the others, e.g. two colourings of the same buildings; start with one visible).
 
 ### Colour
 

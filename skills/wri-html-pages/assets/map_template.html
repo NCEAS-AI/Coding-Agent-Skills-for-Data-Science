@@ -391,13 +391,18 @@ function applyFilter(L){
   sub[L.id].forEach(id => { if(map.getLayer(id) && L.kind !== 'raster') map.setFilter(id, f); });
 }
 function buildKey(){
-  const box = $('layers');
+  const box = $('layers'), groups = {};     // layers sharing an "exclusive" name act like radio buttons (one shown at a time)
   C.layers.forEach(L => {
     if(L.in_key === false) return;
     const d = document.createElement('div'); d.className = 'lay';
     const row = document.createElement('label'); row.className = 'lrow';
     const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = L.visible !== false;
-    cb.addEventListener('change', () => sub[L.id].forEach(id => vis(id, cb.checked)));
+    cb.addEventListener('change', () => {
+      sub[L.id].forEach(id => vis(id, cb.checked));
+      if(cb.checked && L.exclusive) (groups[L.exclusive] || []).forEach(([o, ocb]) => {
+        if(o !== L.id && ocb.checked){ ocb.checked = false; sub[o].forEach(id => vis(id, false)); } });
+    });
+    if(L.exclusive) (groups[L.exclusive] = groups[L.exclusive] || []).push([L.id, cb]);
     row.appendChild(cb);
     const cbx = L.color_by;
     if(!cbx) row.appendChild(swatch(L, (L.style || {}).color || '#3B82F6'));
