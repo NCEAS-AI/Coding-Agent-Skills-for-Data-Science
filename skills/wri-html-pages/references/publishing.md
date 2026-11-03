@@ -70,7 +70,7 @@ links in another folder are kept, with a NOTE).
   page, so keep data inline in gated pages.
 - **Branded lock screen (optional, per page):** a page can put its own logos, title and links on the PIN screen with
   `<meta name="gate-title" content="...">` and `<script type="text/x-gate-brand">…HTML…</script>` (above the PIN box) /
-  `<script type="text/x-gate-foot">…</script>` (below it) anywhere in its plaintext; `pin_gate.gate()` copies them out.
+  `<script type="text/x-gate-foot">…</script>` (below it) anywhere in its plaintext; `pin_gate.gate()` copies them out. Optional: `<meta name="gate-button" content="Open the report">` sets the button text, and a `<label for="pin">` inside the brand block names the PIN field (the hidden "PIN" label is then dropped). The lock screen focuses the field without scrolling, so a tall brand block on a phone still opens at the top; the blocks also stay in the encrypted copy, so re-wrapping keeps them.
   The lock screen is not encrypted, so only names, logos and links go there, never data. Owner, 2026-11-02.
 - `scripts/pin_gate.py --gate IN OUT` / `--ungate IN OUT` encrypt or decrypt a single page; it is
   byte-compatible with the pipeline's `pin_gate_v2.py`, so one PIN entry opens every gated page.

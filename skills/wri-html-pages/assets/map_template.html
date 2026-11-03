@@ -131,7 +131,7 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);margin:0;
 html[data-lang="tech"] .tech{display:revert} html[data-lang="tech"] .plain{display:none}
 /* embedded in a chart page (vizkit.map_panel): slimmer panel, no title block */
 .eyebrow:empty{display:none}
-html.embed #panel{width:300px}
+@media (min-width:761px){html.embed #panel{width:300px}}   /* on a phone the key is a full-width sheet */
 html.embed h1{font-size:14.5px}
 html.embed .ph{padding:11px 10px 8px 14px}
 html.embed #pbody{padding:0 14px 12px}

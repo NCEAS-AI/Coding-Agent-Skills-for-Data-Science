@@ -79,7 +79,7 @@ function show(html) {
   if (document.readyState === "complete") setTimeout(go, 0);
   else window.addEventListener("load", function() { setTimeout(go, 0); });
 }
-function lockForm() { document.documentElement.className = ""; try { document.getElementById("pin").focus(); } catch (e) {} }
+function lockForm() { document.documentElement.className = ""; try { document.getElementById("pin").focus({preventScroll: true}); } catch (e) {} }
 async function withKey(raw) {
   var key = await crypto.subtle.importKey("raw", u8(raw), {name:"AES-GCM"}, false, ["decrypt"]);
   return new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM", iv:u8(I)}, key, u8(C)));
@@ -124,6 +124,9 @@ def brand_lock_screen(head: str, plain: str) -> str:
         <meta name="gate-title" content="Browser-tab title for the lock screen">
         <script type="text/x-gate-brand"> HTML shown above the PIN box (logos, title, links; may hold a <style>) </script>
         <script type="text/x-gate-foot"> HTML shown under the PIN box </script>
+        <meta name="gate-button" content="Text for the Open button">
+    A brand block that has its own <label for="pin"> names the field (the default aria-label is then dropped).
+    The blocks stay in the encrypted copy as well, so re-wrapping a page (--ungate / DIR mode) keeps its branding.
     The lock screen is NOT encrypted: put only what may be public there (names, logos, links), never data.
     Pages without these keep the plain "Enter PIN" screen."""
     import re
@@ -138,6 +141,13 @@ def brand_lock_screen(head: str, plain: str) -> str:
         default = "<h1>Enter PIN</h1><p>This page is shared privately.</p>"
         assert head.count(default) == 1
         head = head.replace(default, brand, 1)
+    if brand and re.search(r'<label[^>]*for="pin"', brand):
+        assert head.count(' aria-label="PIN"') == 1
+        head = head.replace(' aria-label="PIN"', '', 1)
+    b = re.search(r'<meta name="gate-button" content="([^"]*)"', plain)
+    if b:
+        assert head.count('<button type="submit">Open</button>') == 1
+        head = head.replace('<button type="submit">Open</button>', f'<button type="submit">{b.group(1)}</button>', 1)
     if foot:
         end = '<div class="err" id="err" role="alert"></div></form>'
         assert head.count(end) == 1
@@ -151,7 +161,7 @@ def gate(plain: str, pin: str) -> str:
     salt = base64.b64decode(SITE_SALT_B64)
     k = _KEY_CACHE.get(pin) or _KEY_CACHE.setdefault(pin, derive(pin, salt, ITERATIONS))
     iv = secrets.token_bytes(12)
-    ct = AESGCM(k).encrypt(iv, plain.encode("utf-8"), None)
+    ct = AESGCM(k).encrypt(iv, plain.encode("utf-8"), None)   # branding blocks stay inside too, so re-wrapping keeps them
     b = lambda x: base64.b64encode(x).decode()
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from vizkit import head_icon_tags      # flame icon + link-preview image only: no title or description leaks out
