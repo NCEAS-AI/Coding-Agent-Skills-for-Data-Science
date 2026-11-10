@@ -34,7 +34,8 @@ before you write anything.
 
 Prefer to do it by hand? [`agent-setup/SETUP.md`](agent-setup/SETUP.md) reads fine on its own. Or copy a
 skill folder from [`skills/`](skills/) into your tool's skills folder (table below), or upload
-[`dist/wri-html-pages.skill`](dist/wri-html-pages.skill) (and [`dist/wri-html-decks.skill`](dist/wri-html-decks.skill))
+[`dist/wri-html-pages.skill`](dist/wri-html-pages.skill) (and [`dist/wri-html-decks.skill`](dist/wri-html-decks.skill),
+[`dist/external-facing-website.skill`](dist/external-facing-website.skill))
 to claude.ai.
 
 ## The skills
@@ -114,6 +115,34 @@ What every deck gets, without being asked:
 Its guide is [`skills/wri-html-decks/README.md`](skills/wri-html-decks/README.md); the agent reads
 [`SKILL.md`](skills/wri-html-decks/SKILL.md) and [`references/`](skills/wri-html-decks/references/).
 
+### `external-facing-website`: program landing pages for partners and funders, PIN-locked, published by link
+
+Ask for a page to show people outside the team ("make a partner-facing page for this program", "put the
+new accuracy numbers on our public page", "PIN-lock it with the nice login screen") and the agent writes the
+page as a short spec, builds one polished, self-contained landing page in the team's look, checks it on a
+desktop and a phone, runs an adversarial fact-check of every claim, locks it behind a branded PIN screen, and
+publishes it with `wri-html-pages`. It is distilled from the team's National Wildfire Structure Loss Record page
+and a sibling program page, and the owner's feedback over many rounds. It needs `wri-html-pages` installed beside it.
+
+[![Landing page: branded lock screen and the page behind it](docs/img/landing.jpg)](https://wri-science.github.io/public_publication/publication_htmls/structure_loss_pipeline/national-wildfire-structure-loss-record-2026-11-06.html)
+
+[Open the live example](https://wri-science.github.io/public_publication/publication_htmls/structure_loss_pipeline/national-wildfire-structure-loss-record-2026-11-06.html) (this one is published open; new pages are PIN-locked by default).
+
+What every page gets, without being asked:
+
+- **The audience's structure:** a one-paragraph pitch, the map or main visual, why it matters, what you get,
+  who it helps, accuracy with its scope, an honest limits section, a partner call and the team.
+- **Claims that hold up:** every number traced to a source and stated with its scope and how it was tested;
+  model outputs called research estimates; one weak case shown honestly; no invented numbers (the builder
+  refuses unfinished text and placeholder contacts).
+- **A branded lock screen:** a photo panel with the logos and program name, never the bare PIN box, and
+  nothing private on the unencrypted part. Addresses that were ever locked stay locked.
+- **One file, no outside requests** (fonts, logos and photo inlined), light only, checked at desktop, tablet and
+  phone size, and verified after publishing by decrypting the live page and unlocking it in a fresh browser.
+
+Its guide is [`skills/external-facing-website/README.md`](skills/external-facing-website/README.md); the agent reads
+[`SKILL.md`](skills/external-facing-website/SKILL.md) and [`references/`](skills/external-facing-website/references/).
+
 ## What are skills? (Read this: unlike rules, skills include code)
 
 A skill is a folder with a `SKILL.md` file: a name, a one-paragraph description of when to use it, and
@@ -124,7 +153,8 @@ many tools.
 **Unlike the rules repo, these skills include scripts that your agent will run.** `wri-html-pages` runs
 Python scripts that build HTML pages, start a headless Chrome to screenshot them, and `git push` pages to
 the GitHub Pages repo you choose; `wri-html-decks` builds decks, screenshots every slide the same way, downloads
-base-map tiles for still maps, and publishes with `wri-html-pages`. Nothing phones home. The scripts talk to GitHub (to publish a page and
+base-map tiles for still maps, and publishes with `wri-html-pages`; `external-facing-website` builds landing pages,
+encrypts them behind a PIN, opens them in headless Chrome to test the lock, and publishes with `wri-html-pages`. Nothing phones home. The scripts talk to GitHub (to publish a page and
 confirm it is live); the example scripts download their open data once (Palmer Penguins, GBIF, the SCAR
 gazetteer); and the pages, like any web map, load map tiles and JavaScript libraries from public servers
 when opened. Please read before
@@ -166,11 +196,12 @@ pages but cannot push them to GitHub.
 | `agent-setup/SETUP.md` | The setup protocol the agent follows. Start here. |
 | `skills/wri-html-pages/` | The page skill: `SKILL.md`, `references/`, `scripts/`, `assets/`, `examples/`, and a `README.md` for people. |
 | `skills/wri-html-decks/` | The deck skill, same layout (it uses `wri-html-pages` for settings and publishing). |
+| `skills/external-facing-website/` | The landing-page skill, same layout (it uses `wri-html-pages` to check, lock and publish). |
 | `dist/<name>.skill` | Each skill folder as a zip, for uploading to claude.ai or sending to someone. |
 | `docs/img/` | The screenshots above. |
 | `tools/skills.py` | Checks skills against the Agent Skills spec, packages them, and syncs a working copy into this repo. |
 | `CONTRIBUTING.md` | How to update a skill or add a new one. |
-| `LICENSE` | CC0 1.0, public domain (the two logos excepted; see below). |
+| `LICENSE` | CC0 1.0, public domain (the logos and fonts excepted; see below). |
 | `CITATION.cff` | Citation metadata. |
 
 ## Design notes
@@ -193,8 +224,10 @@ pages but cannot push them to GitHub.
 Released under [CC0 1.0 Universal](LICENSE): public domain. Copy, modify and use it for any purpose; no
 attribution required. **Except the logos:** `skills/wri-html-pages/assets/nceas-logo.svg` (National
 Center for Ecological Analysis and Synthesis) and `skills/wri-html-pages/assets/wri-logo.png` (Wildfire
-Resilience Index) belong to those organisations and are not covered by CC0. If you are not on those
-teams, the setup replaces them with your own.
+Resilience Index), and the logos in `skills/external-facing-website/assets/logos/` (UC Santa Barbara, NCEAS,
+Wildfire Resilience Index) belong to those organisations and are not covered by CC0. If you are not on those
+teams, the setup replaces them with your own. The fonts in `skills/external-facing-website/assets/fonts/` (Inter,
+Source Serif 4) are under the SIL Open Font License 1.1; its lock-screen photo is USDA NAIP imagery (public domain).
 
 ---
 
@@ -215,7 +248,7 @@ button from it, and a Zenodo DOI will appear at the top of this README once arch
 
 📋 **Copy-paste citation:**
 
-> Broderick, C. (2026). *Coding-Agent Skills for Data Science* (Version v1.1.0) [Software].
+> Broderick, C. (2026). *Coding-Agent Skills for Data Science* (Version v1.2.0) [Software].
 > https://github.com/NCEAS-AI/Coding-Agent-Skills-for-Data-Science
 
 ---

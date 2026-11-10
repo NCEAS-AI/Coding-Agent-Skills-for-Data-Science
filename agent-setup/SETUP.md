@@ -52,13 +52,14 @@ setup whenever you want the latest. Your personal settings carry over.
   questions that are yours to answer."
 - **Ask me instead:** "Don't check anything; I'll tell you."
 
-**B. Which skills?** List the folders in `skills/` with the first line of each `README.md`, propose both and
-confirm (`wri-html-decks` needs `wri-html-pages` installed in the same skills folder):
+**B. Which skills?** List the folders in `skills/` with the first line of each `README.md`, propose all three and
+confirm (`wri-html-decks` and `external-facing-website` need `wri-html-pages` installed in the same skills folder):
 
 | Skill | What it does |
 |---|---|
 | `wri-html-pages` | Turns any data-visualization request into an interactive HTML page (maps, charts, tables) in a house style, checks it for statistical rigor and on a phone, publishes it to a GitHub Pages site, and links it. |
 | `wri-html-decks` | Turns any request for a presentation into an HTML slide deck in the same style (sectioned progress strip, one idea per slide, charts and still maps drawn for the slide, hover tips), checks every slide, publishes it with `wri-html-pages`, and links it. |
+| `external-facing-website` | Turns a request for an outward-facing program or project page (for partners, agencies, funders) into one polished landing page in the team's look, locked behind a branded PIN screen by default, checks it on desktop and phone, publishes it with `wri-html-pages`, and links it. |
 
 ---
 
@@ -119,6 +120,10 @@ For `wri-html-decks`: everything above (it uses `wri-html-pages` to publish), pl
 (already in the table) and internet access for base-map tiles. Its slide checks need Chrome and
 `websocket-client`, like the page screenshots.
 
+For `external-facing-website`: everything `wri-html-pages` needs (version 1.13.0 or newer), and `cryptography` is
+required, not optional, because its pages are PIN-locked by default. Chrome and `websocket-client` run the lock-screen
+test. Fonts, logos and the lock-screen photo are bundled; map embeds load MapLibre and tiles from the internet.
+
 ---
 
 ## Phase 3: Ask the user
@@ -143,7 +148,11 @@ own: it uses the answers below (the same identity.json and site).
 6. *(If they use an HTTPS login rather than SSH keys)* Confirm you'll set the HTTPS remote.
 7. *(Only if they bring it up)* **PIN-gated pages:** pages can be encrypted behind a PIN when the user
    asks for it. The PIN is set per session with `export SLP_PIN=...` and is never written to a file.
-   On the WRI team, ask Carlo for the site PIN.
+   On the WRI team, ask Carlo for the site PIN. `external-facing-website` locks its pages by default, so it
+   needs `SLP_PIN` in the session whenever it publishes.
+8. *(Only if `external-facing-website` was chosen)* **Contact for your landing pages:** the name and email shown
+   on the lock screen and in the partner call (none: the agent asks each time). Not the WRI team: **which logos
+   go in the landing page's logo row?** (default: the organisations from question 4).
 
 ---
 
@@ -177,7 +186,11 @@ Build this, show it all, get a yes, then write it.
    (it finds the page skill there; elsewhere, set `DECK_PAGES_SKILL=/path/to/wri-html-pages`). If the user chose
    ask-before-publishing, make the same edit in its `SKILL.md` section "Automatic: every deck is built, checked,
    published and linked".
-6. Add a short note in the identity file's `_why`: installed from
+6. **`external-facing-website`:** copy `skills/external-facing-website/` into the **same** skills folder as
+   `wri-html-pages` (elsewhere set `EFW_PAGES_SKILL=/path/to/wri-html-pages`). Write
+   `~/.config/external-facing-website/site.json` from its `references/site.json` with the contact and logos from
+   Phase 3 question 8 (logo files beside it). Never put a PIN there.
+7. Add a short note in the identity file's `_why`: installed from
    `NCEAS-AI/Coding-Agent-Skills-for-Data-Science` on `<date>`, version `<metadata.version from SKILL.md>`.
 
 ---
@@ -200,8 +213,12 @@ Run, from the installed skill folder (call it `SKILL`), telling the user what ea
    (with `DECKS` the installed `wri-html-decks` folder) must print the page skill's folder; then
    `python3 DECKS/scripts/shoot_deck.py https://wri-science.github.io/public_publication/publication_htmls/style_archetypes/deck-archetype-palmer-penguins-species-sex-island-2026-10-23.html /tmp/deck-test --slides 1-3`
    should write three slide pictures and report no errors.
-5. **The tool sees the skills:** ask the user to start a new session and ask the agent "what skills do
-   you have?" (or open the tool's skills panel). `wri-html-pages` (and `wri-html-decks`) should be listed.
+5. **Landing pages** *(if installed)*: `python3 EFW/scripts/efw.py --where` (with `EFW` the installed
+   `external-facing-website` folder) must print the page skill (version 1.13.0 or newer) and the settings file;
+   then `python3 EFW/scripts/build_site.py EFW/examples/wildfire-structure-loss-record.json /tmp/efw-test/` should
+   write one page (it stops and asks for a contact if none is set). Nothing is published.
+6. **The tool sees the skills:** ask the user to start a new session and ask the agent "what skills do
+   you have?" (or open the tool's skills panel). `wri-html-pages` (and `wri-html-decks`, `external-facing-website`) should be listed.
 
 Then tell the user plainly:
 - **What** you installed, **where**, and where their personal settings are.
@@ -209,7 +226,8 @@ Then tell the user plainly:
   *"chart body mass by species"*, *"add a panel with the yearly totals"*. The agent builds, checks,
   publishes and links the page; later requests add panels to the same page. For a talk, ask for a deck
   (*"make a deck of these results for Monday"*, *"add a slide on the new site"*); later requests update the
-  same deck and link.
+  same deck and link. For a page to show partners or funders, ask for an external site (*"make a
+  partner-facing page for this project"*); it is PIN-locked unless they say otherwise.
 - **How to change the house style:** tell the agent ("make the dots bigger on every map"); it
   edits the skill's references and templates.
 - **How to update:** re-run this setup (or `git pull` if linked). Personal settings carry over.

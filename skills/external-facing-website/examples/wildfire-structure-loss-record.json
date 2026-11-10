@@ -1,0 +1,860 @@
+{
+ "$schema": "../assets/site-spec.schema.json",
+ "_about": "The open National Wildfire Structure Loss Record page (live since 2026-11-06), as a site spec. Text copied from the live page; see examples/README.md.",
+ "_why_src": "Most src notes here say 'As published on the live page' only because the program's internal result notes are not public. That is NOT acceptable on a new page: cite the primary document and section for every number (a results note, a paper, a data release).",
+ "_why_contact": "No contact here on purpose: the build uses the contact in ~/.config/external-facing-website/site.json (or add a \"contact\" block to the spec). With none set, build_site stops and asks for one.",
+ "page": {
+  "title": "National Wildfire Structure Loss Record",
+  "date": "2026-11-06",
+  "built": "2026-11-06",
+  "description": "An NCEAS research project building a national record of buildings destroyed by wildfire, estimated from public satellite imagery and tested against official damage inspections.",
+  "og_description": "Research estimates of building-by-building wildfire loss from public satellite imagery, tested against official damage inspections.",
+  "program_line": "An NCEAS Research Program"
+ },
+ "gate": {
+  "tagline": "Building a national record of the buildings that wildfires destroy, picking up where the U.S. Geological Survey&#8217;s record ends in 2022.",
+  "button": "Open the map",
+  "access_text": "This research program from the National Center for Ecological Analysis and Synthesis (NCEAS) at UC Santa Barbara and the Wildfire Resilience Index is shared privately. ",
+  "lock_button": false
+ },
+ "sections": [
+  {
+   "type": "hero",
+   "lede": [
+    "We are building a national record of the buildings that wildfires destroy, picking up where the U.S. Geological Survey's record ends in 2022. For each fire, a model compares public satellite images of the buildings that stood beforehand with images taken after, and calls each one destroyed or standing. These calls are research estimates, not inspections. Tested against official damage inspections, they are usually right for homes and other significant buildings in California wildfires, and weaker where we have had less inspection data to learn from, such as grass fires on the Great Plains. Damage records shared by fire agencies and partners are how we close those gaps."
+   ]
+  },
+  {
+   "type": "map",
+   "id": "map",
+   "nav": "See it",
+   "eyebrow": "See it on real fires",
+   "heading": "Four fires, building by building",
+   "lede": "Each shape is a building, colored by what the damage record found and what our model called it; the dashed line marks the edge of the area shown. Hover over a building to see what its color means. Each fire was scored by a version of the model that never saw it.",
+   "iframe": {
+    "src": "https://wri-science.github.io/public_publication/publication_htmls/structure_loss_pipeline/four-fires-map-embed-2026-11-06.html",
+    "title": "Interactive map: four fires, each building colored by the damage record and our model's call"
+   },
+   "tiles": [
+    {
+     "title": "Palisades, CA · 2025",
+     "place": "Palisades, CA · 2025",
+     "value": "99%",
+     "text": "of burned buildings caught in the area shown (3,365 of 3,405); 98% of our burned calls right",
+     "tip": "<b>Palisades, CA · 2025.</b> 4,549 buildings with a damage record in the area shown:<br><span style=\"color:#C2410C\">&#9632;</span> burned, and we said burned: 3,365<br><span style=\"color:#7C3AED\">&#9632;</span> burned, but we said not burned (missed): 40<br><span style=\"color:#FACC15\">&#9632;</span> not burned, but we said burned (false alarm): 79<br><span style=\"color:#38BDF8\">&#9632;</span> not burned, and we said not burned: 1,065<br>Damage record: CAL FIRE damage inspections.",
+     "src": "As published on the live page (version of 2026-11-09)"
+    },
+    {
+     "title": "Eaton, CA · 2025",
+     "place": "Eaton, CA · 2025",
+     "value": "97%",
+     "text": "of burned buildings caught in the area shown (3,973 of 4,078); 97% of our burned calls right",
+     "tip": "<b>Eaton, CA · 2025.</b> 6,205 buildings with a damage record in the area shown:<br><span style=\"color:#C2410C\">&#9632;</span> burned, and we said burned: 3,973<br><span style=\"color:#7C3AED\">&#9632;</span> burned, but we said not burned (missed): 105<br><span style=\"color:#FACC15\">&#9632;</span> not burned, but we said burned (false alarm): 137<br><span style=\"color:#38BDF8\">&#9632;</span> not burned, and we said not burned: 1,990<br>Damage record: CAL FIRE damage inspections.",
+     "src": "As published on the live page (version of 2026-11-09)"
+    },
+    {
+     "title": "Marshall, CO · 2021",
+     "place": "Marshall, CO · 2021",
+     "value": "94%",
+     "text": "of burned buildings caught in the area shown (658 of 699); 100% of our burned calls right",
+     "tip": "<b>Marshall, CO · 2021.</b> 2,445 buildings with a damage record in the area shown:<br><span style=\"color:#C2410C\">&#9632;</span> burned, and we said burned: 658<br><span style=\"color:#7C3AED\">&#9632;</span> burned, but we said not burned (missed): 41<br><span style=\"color:#FACC15\">&#9632;</span> not burned, but we said burned (false alarm): 2<br><span style=\"color:#38BDF8\">&#9632;</span> not burned, and we said not burned: 1,744<br>Damage record: USGS building-loss record (Carlson et al. 2025).",
+     "src": "As published on the live page (version of 2026-11-09)"
+    },
+    {
+     "title": "Sugar, CA · 2021",
+     "place": "Sugar, CA · 2021",
+     "value": "7%",
+     "flagged": true,
+     "text": "of burned buildings caught in the area shown (2 of 27); no false alarms",
+     "tip": "<b>Sugar, CA · 2021.</b> 166 buildings with a damage record in the area shown:<br><span style=\"color:#C2410C\">&#9632;</span> burned, and we said burned: 2<br><span style=\"color:#7C3AED\">&#9632;</span> burned, but we said not burned (missed): 25<br><span style=\"color:#FACC15\">&#9632;</span> not burned, but we said burned (false alarm): 0<br><span style=\"color:#38BDF8\">&#9632;</span> not burned, and we said not burned: 139<br>Damage record: USGS building-loss record (Carlson et al. 2025).",
+     "src": "As published on the live page (version of 2026-11-09)"
+    }
+   ],
+   "popup": {
+    "place": "Sugar, CA · 2021",
+    "title": "Why the model misses in Doyle",
+    "lead": "The 2021 Sugar fire burned through Doyle, a small town in California's high desert. In the area shown the model caught only 2 of 27 destroyed buildings; across the whole fire, 75 of 107.",
+    "reasons": [
+     "Little vegetation: the buildings it missed had less greenery around them before the fire than the ones it caught, so their loss left a fainter mark in the satellite images. Grass fires on the Great Plains show the same problem.",
+     "Few examples to learn from: under 1 in 10 of the destroyed buildings in our records are in grassland or desert."
+    ],
+    "helps": [
+     "More inspected damage records from open country, such as Oklahoma and the rest of the Great Plains, to train and test on.",
+     "More agencies and partners sharing their field damage records with us. <a href=\"#partner\">Share yours</a>."
+    ]
+   },
+   "how": {
+    "items": [
+     "Only buildings with a damage record are drawn. A building takes the record that falls inside its outline, or the nearest record within 10 m; if any record on it says destroyed, it counts as burned. Buildings whose only record is \"Major (25–50%)\" damage or \"Inaccessible\" are left off.",
+     "Damage records: CAL FIRE inspections for Palisades and Eaton; the U.S. Geological Survey record (Carlson et al. 2025) for Marshall and Sugar. A score of 0.88 or higher counts as \"we said burned\". On Sugar, buildings with no outline on record are drawn as small squares at the USGS point.",
+     "Palisades is scored by the model version used in our <a href=\"https://wri-science.github.io/public_publication/publication_htmls/structure_loss_pipeline/palisades-fire-inspectors-versus-our-model-2026-10-27.html\">full Palisades check</a>; Eaton, Marshall and Sugar by the leave-one-fire-out first call (September 2026). Tile counts cover the area inside the dashed line. Building outlines are pre-fire USA Structures outlines, except on Palisades, where they come from our Palisades check. The satellite base map is shown in grey so the building colors stand out."
+    ]
+   },
+   "hint": "On a computer, drag to move and hold Ctrl (⌘ on a Mac) while scrolling to zoom; on a phone, use two fingers."
+  },
+  {
+   "type": "tiles",
+   "id": "why",
+   "nav": "Why it matters",
+   "eyebrow": "Why it matters",
+   "wide": true,
+   "lede_size": "md",
+   "heading": "Knowing what burned is slow, patchy and hard to compare",
+   "lede": "Fire agencies, recovery programs and researchers all need to know which buildings a wildfire destroyed. Field inspections are the most trusted answer, but they take crews and time, few are made public outside California, and the U.S. Geological Survey's national building-by-building record stops with the 2022 fires.",
+   "chart": {
+    "title": "Buildings destroyed each year in the USGS wildfire record",
+    "subtitle": "Wildfires that destroyed 10 or more buildings in the lower 48 states, mapped by the U.S. Geological Survey (Carlson et al. 2025). Hover or tap a year.",
+    "aria_label": "Bar chart of buildings destroyed by wildfire each year in the USGS record, 2002 to 2022, peaking at 21,629 in 2018; the years 2023 to 2026 are blank because the record ends with 2022.",
+    "categories": [
+     {
+      "label": "2002",
+      "value": 183,
+      "tip": "<b>2002</b><br>183 destroyed buildings in 4 fires in the USGS record",
+      "cols": {
+       "Fires": 4
+      }
+     },
+     {
+      "label": "2003",
+      "value": 2690,
+      "tip": "<b>2003</b><br>2,690 destroyed buildings in 9 fires in the USGS record",
+      "cols": {
+       "Fires": 9
+      }
+     },
+     {
+      "label": "2004",
+      "value": 15,
+      "tip": "<b>2004</b><br>15 destroyed buildings in 1 fire in the USGS record",
+      "cols": {
+       "Fires": 1
+      }
+     },
+     {
+      "label": "2005",
+      "value": 479,
+      "tip": "<b>2005</b><br>479 destroyed buildings in 17 fires in the USGS record",
+      "cols": {
+       "Fires": 17
+      }
+     },
+     {
+      "label": "2006",
+      "value": 171,
+      "tip": "<b>2006</b><br>171 destroyed buildings in 4 fires in the USGS record",
+      "cols": {
+       "Fires": 4
+      }
+     },
+     {
+      "label": "2007",
+      "value": 1751,
+      "tip": "<b>2007</b><br>1,751 destroyed buildings in 15 fires in the USGS record",
+      "cols": {
+       "Fires": 15
+      }
+     },
+     {
+      "label": "2008",
+      "value": 1712,
+      "tip": "<b>2008</b><br>1,712 destroyed buildings in 13 fires in the USGS record",
+      "cols": {
+       "Fires": 13
+      }
+     },
+     {
+      "label": "2009",
+      "value": 645,
+      "tip": "<b>2009</b><br>645 destroyed buildings in 16 fires in the USGS record",
+      "cols": {
+       "Fires": 16
+      }
+     },
+     {
+      "label": "2010",
+      "value": 20,
+      "tip": "<b>2010</b><br>20 destroyed buildings in 2 fires in the USGS record",
+      "cols": {
+       "Fires": 2
+      }
+     },
+     {
+      "label": "2011",
+      "value": 2217,
+      "tip": "<b>2011</b><br>2,217 destroyed buildings in 27 fires in the USGS record",
+      "cols": {
+       "Fires": 27
+      }
+     },
+     {
+      "label": "2012",
+      "value": 562,
+      "tip": "<b>2012</b><br>562 destroyed buildings in 11 fires in the USGS record",
+      "cols": {
+       "Fires": 11
+      }
+     },
+     {
+      "label": "2013",
+      "value": 1028,
+      "tip": "<b>2013</b><br>1,028 destroyed buildings in 5 fires in the USGS record",
+      "cols": {
+       "Fires": 5
+      }
+     },
+     {
+      "label": "2014",
+      "value": 1276,
+      "tip": "<b>2014</b><br>1,276 destroyed buildings in 11 fires in the USGS record",
+      "cols": {
+       "Fires": 11
+      }
+     },
+     {
+      "label": "2015",
+      "value": 4603,
+      "tip": "<b>2015</b><br>4,603 destroyed buildings in 25 fires in the USGS record",
+      "cols": {
+       "Fires": 25
+      }
+     },
+     {
+      "label": "2016",
+      "value": 3149,
+      "tip": "<b>2016</b><br>3,149 destroyed buildings in 23 fires in the USGS record",
+      "cols": {
+       "Fires": 23
+      }
+     },
+     {
+      "label": "2017",
+      "value": 10806,
+      "tip": "<b>2017</b><br>10,806 destroyed buildings in 31 fires in the USGS record",
+      "cols": {
+       "Fires": 31
+      }
+     },
+     {
+      "label": "2018",
+      "value": 21629,
+      "tip": "<b>2018</b><br>21,629 destroyed buildings in 30 fires in the USGS record; 16,493 of them in the Camp fire (Paradise, CA)",
+      "cols": {
+       "Fires": 30
+      }
+     },
+     {
+      "label": "2019",
+      "value": 378,
+      "tip": "<b>2019</b><br>378 destroyed buildings in 3 fires in the USGS record",
+      "cols": {
+       "Fires": 3
+      }
+     },
+     {
+      "label": "2020",
+      "value": 14077,
+      "tip": "<b>2020</b><br>14,077 destroyed buildings in 59 fires in the USGS record",
+      "cols": {
+       "Fires": 59
+      }
+     },
+     {
+      "label": "2021",
+      "value": 4569,
+      "tip": "<b>2021</b><br>4,569 destroyed buildings in 33 fires in the USGS record",
+      "cols": {
+       "Fires": 33
+      }
+     },
+     {
+      "label": "2022",
+      "value": 1574,
+      "tip": "<b>2022</b><br>1,574 destroyed buildings in 22 fires in the USGS record",
+      "cols": {
+       "Fires": 22
+      }
+     },
+     {
+      "label": "2023",
+      "gap": true,
+      "tip": "<b>2023</b><br>Not in the USGS record, which ends with 2022 fires."
+     },
+     {
+      "label": "2024",
+      "gap": true,
+      "tip": "<b>2024</b><br>Not in the USGS record, which ends with 2022 fires."
+     },
+     {
+      "label": "2025",
+      "gap": true,
+      "tip": "<b>2025</b><br>Not in the USGS record, which ends with 2022 fires."
+     },
+     {
+      "label": "2026",
+      "gap": true,
+      "tip": "<b>2026 (so far)</b><br>Not in the USGS record, which ends with 2022 fires."
+     }
+    ],
+    "value_label": "destroyed buildings",
+    "ymax": 25000,
+    "ytick_step": 5000,
+    "ytick_format": "k",
+    "label_every": 4,
+    "annotations": [
+     {
+      "at": "2018",
+      "text": "Camp fire, Paradise, CA",
+      "detail": "16,493 of 2018's 21,629"
+     }
+    ],
+    "gap_label": {
+     "text": "Not in the USGS record",
+     "detail": "Later fires include Eaton and Palisades, 2025"
+    },
+    "totals": [
+     {
+      "value": "73,534",
+      "label": "buildings destroyed,<br>2002–2022",
+      "assert_sum": true
+     },
+     {
+      "value": "362",
+      "label": "fires in<br>the record"
+     },
+     {
+      "value": "2023 on",
+      "label": "not in the<br>USGS record",
+      "gap": true
+     }
+    ],
+    "key": [
+     {
+      "label": "Destroyed buildings in the USGS record (Carlson et al. 2025)",
+      "kind": "bar"
+     },
+     {
+      "label": "2023 onward: fires not in the record",
+      "kind": "gap"
+     }
+    ],
+    "table": {
+     "note": "Fire counts per year are the fires with mapped buildings in the release's point file (361 of the 362 fires USGS lists).",
+     "label_header": "Year",
+     "value_header": "Destroyed",
+     "split": 3
+    },
+    "src": [
+     "USGS data release doi:10.5066/P1QX6UXD (Carlson et al. 2025): destroyed buildings (bldg_cond B) counted per fire year",
+     "USGS publishes n = 362 fires; the point file has 361 distinct fire IDs (noted under the chart)"
+    ]
+   },
+   "tiles": [
+    {
+     "icon": "clock",
+     "title": "Inspections take crews and time",
+     "body": "Field inspection is the gold standard, but it needs trained crews on the ground, and many fires never get one. CAL FIRE's public inspection data cover <b>443 fires</b> from 2013 to 2025; outside California, the inspection records we could obtain cover only <b>55 fires</b>.",
+     "src": "CAL FIRE DINS open data (data.ca.gov), fires 2013-2025; non-California count as on the live page"
+    },
+    {
+     "icon": "patch",
+     "title": "Agencies record damage differently",
+     "body": "Forms, building types and damage grades vary from agency to agency, so a loss count from one fire is hard to compare with another's."
+    },
+    {
+     "icon": "gap",
+     "title": "The national record stops in 2022",
+     "body": "The USGS building-by-building record covers <b>362 fires</b> that destroyed 10 or more buildings from 2002 to 2022. Fires since then, including Eaton and Palisades in 2025, are not in it.",
+     "src": "USGS data release doi:10.5066/P1QX6UXD (Carlson et al. 2025): destroyed buildings (bldg_cond B) counted per fire year"
+    },
+    {
+     "icon": "sat",
+     "title": "Free satellite images cover every recent fire",
+     "body": "Europe's Sentinel-2 satellites have photographed the land since 2015, now about every five days, and the images are free. That lets us score every fire the same way, including where no crew went, though our estimates there are <a href=\"#limits\">less tested</a>."
+    }
+   ]
+  },
+  {
+   "type": "pipeline",
+   "id": "what",
+   "nav": "What you get",
+   "eyebrow": "What you get for each fire",
+   "wide": true,
+   "flow": {
+    "in": "Public imagery in",
+    "out": "building losses out"
+   },
+   "steps": [
+    {
+     "icon": "house",
+     "title": "The buildings that stood before the fire",
+     "body": "From building maps dated before the fire, plus buildings we find in pre-fire aerial photos.",
+     "chips": [
+      {
+       "label": "USDA aerial photos (NAIP)",
+       "href": "https://naip-usdaonline.hub.arcgis.com/",
+       "tip": "Pre-fire aerial photos, about 60 cm per pixel, used to find buildings that no building map holds."
+      },
+      {
+       "label": "USA Structures",
+       "href": "https://gis-fema.hub.arcgis.com/pages/usa-structures",
+       "tip": "FEMA / Oak Ridge building outlines with dates."
+      },
+      {
+       "label": "Microsoft building footprints",
+       "href": "https://github.com/microsoft/GlobalMLBuildingFootprints",
+       "tip": "Building outlines read from imagery by Microsoft."
+      },
+      {
+       "label": "Overture Maps",
+       "href": "https://overturemaps.org/",
+       "tip": "For recent fires, the Overture building release dated just before ignition."
+      },
+      {
+       "label": "Sentinel-2",
+       "href": "https://sentiwiki.copernicus.eu/web/s2-mission",
+       "tip": "European Space Agency satellites imaging every place every few days at 10 m: the before-and-after comparison."
+      },
+      {
+       "label": "Fire perimeters",
+       "href": "https://data-nifc.opendata.arcgis.com/",
+       "tip": "National Interagency Fire Center, USGS / Forest Service MTBS and CAL FIRE FRAP fire outlines."
+      }
+     ]
+    },
+    {
+     "icon": "sat",
+     "title": "A call for each building",
+     "body": "The model compares Sentinel-2 satellite images of each building from before and up to 74 days after the fire and scores it 0 to 1; <span class=\"dotted\" data-tip=\"The cut that turns a score into a destroyed call is a fixed project value, set by comparing results on past fires with the USGS and CAL FIRE records.\">0.88 or higher</span> is a destroyed call. For some fires (62 so far), a refined second look follows about a year later."
+    },
+    {
+     "icon": "table",
+     "title": "One consistent record",
+     "body": "A table and map of each listed building with its score and call, made the same way on every fire.",
+     "list": {
+      "summary": "See the reference records we learn from and test against",
+      "items": [
+       {
+        "name": "USGS national building-loss record, 2002–2022",
+        "href": "https://doi.org/10.5066/P1QX6UXD",
+        "detail": "Carlson et al. 2025, U.S. Geological Survey · 362 fires, 73,534 destroyed buildings · public domain"
+       },
+       {
+        "name": "CAL FIRE Damage Inspection (DINS), 2013–2025",
+        "href": "https://data.ca.gov/dataset/cal-fire-damage-inspection-dins-data",
+        "detail": "CAL FIRE · 443 fires, 132,522 inspected structures · open data"
+       },
+       {
+        "name": "BRIGHT building damage labels, Lahaina 2023",
+        "detail": "Independent building-level labels, used only for testing"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "type": "cards",
+   "id": "uses",
+   "nav": "Uses",
+   "eyebrow": "Who it helps",
+   "heading": "One loss record, many users",
+   "cards": [
+    {
+     "icon": "flame",
+     "title": "Fire agencies",
+     "bullets": [
+      "Estimated losses where inspections were partial or never made."
+     ]
+    },
+    {
+     "icon": "shield",
+     "title": "Recovery and resilience",
+     "bullets": [
+      "Which kinds of buildings and places are lost most often, to guide recovery and resilience programs."
+     ]
+    },
+    {
+     "icon": "flask",
+     "title": "Researchers",
+     "bullets": [
+      "One method across many fires, not only the famous ones, to study why buildings are lost."
+     ]
+    },
+    {
+     "icon": "city",
+     "title": "Planners and policy",
+     "bullets": [
+      "A consistent count across years, to help study, with other data, whether building codes and mitigation reduce losses."
+     ]
+    }
+   ]
+  },
+  {
+   "type": "stats",
+   "id": "accuracy",
+   "nav": "Accuracy",
+   "eyebrow": "Tested against official inspections",
+   "heading": "Accurate where it counts: homes and significant buildings",
+   "lede": "Scored against official building-by-building inspections (Lahaina: imagery-based labels), with each fire scored by a model version that never saw it. These scores measure the damage call alone; buildings missing from our list are covered under Limits.",
+   "stats": [
+    {
+     "value": "0.97",
+     "label": "damage-call F1 on homes and other significant structures, all buildings pooled (0.91 averaged per fire)",
+     "scope": "18 CAL FIRE-inspected fires, 2023–2025",
+     "tip": "<b>Significant structures</b> are houses, apartments, mobile homes, businesses, schools and churches: every inspected building except sheds and other utility structures, motor homes and infrastructure. On the 18 CAL FIRE incidents since 2023 with 10 or more destroyed buildings, the model caught 97% of those inspectors recorded as destroyed, and 97% of its destroyed calls were confirmed (F1 0.970). The refined second look scores 0.977 on 17 of the fires. Each fire was scored by a version of the model that never saw it. (The second look covers 17 of the 18 fires.)",
+     "src": "As published on the live page (version of 2026-11-09)"
+    },
+    {
+     "value": "98%",
+     "label": "of destroyed single-family homes in our building list caught; 97% of calls right",
+     "scope": "15 CAL FIRE-inspected fires, 2024–2025",
+     "tip": "For single-family homes in our building list, the model caught 98% of the destroyed ones and 97% of its destroyed calls were confirmed (F1 0.974). The refined second look scores 0.982 on the 12 of these fires it covers.",
+     "src": "As published on the live page (version of 2026-11-09)"
+    },
+    {
+     "value": "93%",
+     "label": "of the single-family homes later destroyed were already in our pre-fire building list",
+     "scope": "25 western U.S. fires from 2024 on",
+     "tip": "On 25 fires from 2024 on, after our building-finding model was trained, the pre-fire building list already held 93% of the 13,883 single-family homes the fires went on to destroy, and 91% of all 15,365 destroyed major buildings. Pooled over all buildings, so the large Eaton and Palisades fires weigh most.",
+     "src": "As published on the live page (version of 2026-11-09)"
+    },
+    {
+     "value": "0.95",
+     "label": "damage-call F1 on Lahaina, a fire the model never trained on",
+     "scope": "Maui, Hawaii, 2023",
+     "tip": "Scored against the independent BRIGHT damage labels for Lahaina, a fire the model never trained on: caught 98% of destroyed buildings, 93% of destroyed calls confirmed (F1 0.953).",
+     "src": "As published on the live page (version of 2026-11-09)"
+    }
+   ],
+   "bar_cards": [
+    {
+     "title": "The damage call, by kind of building",
+     "key": [
+      {
+       "color": "navy",
+       "label": "Caught: of the destroyed buildings, the share the model called destroyed"
+      },
+      {
+       "color": "gold",
+       "label": "Right when called: of the model's destroyed calls, the share confirmed"
+      }
+     ],
+     "rows": [
+      {
+       "name": "Homes and other significant buildings",
+       "scope": "18 CAL FIRE-inspected fires, 2023–2025",
+       "tip": "<b>Significant structures</b> are houses, apartments, mobile homes, businesses, schools and churches: every inspected building except sheds and other utility structures, motor homes and infrastructure. On the 18 CAL FIRE incidents since 2023 with 10 or more destroyed buildings, the model caught 97% of those inspectors recorded as destroyed, and 97% of its destroyed calls were confirmed (F1 0.970). The refined second look scores 0.977 on 17 of the fires. Each fire was scored by a version of the model that never saw it. (The second look covers 17 of the 18 fires.)",
+       "bars": [
+        {
+         "value": 0.974
+        },
+        {
+         "value": 0.966
+        }
+       ]
+      },
+      {
+       "name": "Single-family homes",
+       "scope": "15 CAL FIRE-inspected fires, 2024–2025 · 10,293 destroyed homes in our building list (of 11,784 destroyed)",
+       "tip": "For single-family homes in our building list, the model caught 98% of the destroyed ones and 97% of its destroyed calls were confirmed (F1 0.974). The refined second look scores 0.982 on the 12 of these fires it covers.",
+       "bars": [
+        {
+         "value": 0.982
+        },
+        {
+         "value": 0.967
+        }
+       ]
+      },
+      {
+       "name": "All other main buildings",
+       "scope": "Apartments, mobile homes, commercial and public buildings and more · same 15 fires",
+       "tip": "Every inspected building in our building list that is not a single-family home or an outbuilding: multi-family, mobile homes, commercial, school, church, mixed use, and a few motor homes and infrastructure. Caught 96%, 95% of destroyed calls confirmed (F1 0.956).",
+       "bars": [
+        {
+         "value": 0.962
+        },
+        {
+         "value": 0.951
+        }
+       ]
+      },
+      {
+       "name": "Lahaina, Maui, 2023",
+       "scope": "Never used in training · 2,053 destroyed buildings",
+       "tip": "Scored against the independent BRIGHT damage labels for Lahaina, a fire the model never trained on: caught 98% of destroyed buildings, 93% of destroyed calls confirmed (F1 0.953).",
+       "bars": [
+        {
+         "value": 0.976
+        },
+        {
+         "value": 0.932
+        }
+       ]
+      }
+     ],
+     "note": "<b>F1</b> balances the two in one score from 0 to 1, where 1 is perfect: 0.97 for significant structures, 0.97 for single-family homes, 0.96 for all other main buildings and 0.95 on Lahaina.",
+     "checks": {
+      "items": [
+       "Truth is CAL FIRE's building-by-building damage inspection, where destroyed means over 50% damaged; for Lahaina it is the BRIGHT 'destroyed' label, drawn from aerial imagery.",
+       "Each fire is scored by a model version trained without it; the CAL FIRE rows pool every scored building, so the largest fires weigh most.",
+       "These rows score the damage call alone. The significant-structure row scores it at each inspected building on the 8 largest fires and at the inspected buildings our list held on the 10 smaller ones; the Lahaina row scores it at each BRIGHT-labelled building. The single-family and other-building rows score it at the buildings our building list held at the time (87% of the destroyed single-family homes on those 15 fires; across 25 fires from 2024 on, the current list holds 93%, see above)."
+      ]
+     }
+    },
+    {
+     "title": "Fire by fire: the largest California fires since 2023",
+     "key": [
+      {
+       "color": "navy",
+       "label": "F1, first call (about 10 weeks after the fire)"
+      },
+      {
+       "color": "gold",
+       "label": "F1, refined second look"
+      }
+     ],
+     "rows": [
+      {
+       "name": "Palisades",
+       "scope": "2025 · 5,712 significant structures destroyed",
+       "tip": "<b>Palisades fire, 2025.</b> 5,712 destroyed significant structures in the CAL FIRE inspection. F1 0.978 on the first call, 0.970 on the refined second look. Scored by a version of the model trained without this fire.",
+       "bars": [
+        {
+         "value": 0.978,
+         "label": "0.98"
+        },
+        {
+         "value": 0.97,
+         "label": "0.97"
+        }
+       ]
+      },
+      {
+       "name": "Eaton",
+       "scope": "2025 · 6,263 significant structures destroyed",
+       "tip": "<b>Eaton fire, 2025.</b> 6,263 destroyed significant structures in the CAL FIRE inspection. F1 0.967 on the first call, 0.986 on the refined second look. Scored by a version of the model trained without this fire.",
+       "bars": [
+        {
+         "value": 0.967,
+         "label": "0.97"
+        },
+        {
+         "value": 0.986,
+         "label": "0.99"
+        }
+       ]
+      },
+      {
+       "name": "Park",
+       "scope": "2024 · 397 significant structures destroyed",
+       "tip": "<b>Park fire, 2024.</b> 397 destroyed significant structures in the CAL FIRE inspection. F1 0.955 on the first call, 0.970 on the refined second look. Scored by a version of the model trained without this fire.",
+       "bars": [
+        {
+         "value": 0.955,
+         "label": "0.96"
+        },
+        {
+         "value": 0.97,
+         "label": "0.97"
+        }
+       ]
+      },
+      {
+       "name": "TCU Complex",
+       "scope": "2025 · 43 significant structures destroyed",
+       "tip": "<b>TCU Complex fire, 2025.</b> 43 destroyed significant structures in the CAL FIRE inspection. F1 0.948 on the first call, 0.977 on the refined second look. Scored by a version of the model trained without this fire.",
+       "bars": [
+        {
+         "value": 0.948,
+         "label": "0.95"
+        },
+        {
+         "value": 0.977,
+         "label": "0.98"
+        }
+       ]
+      },
+      {
+       "name": "Borel",
+       "scope": "2024 · 119 significant structures destroyed",
+       "tip": "<b>Borel fire, 2024.</b> 119 destroyed significant structures in the CAL FIRE inspection. F1 0.945 on the first call, 0.962 on the refined second look. Scored by a version of the model trained without this fire.",
+       "bars": [
+        {
+         "value": 0.945,
+         "label": "0.95"
+        },
+        {
+         "value": 0.962,
+         "label": "0.96"
+        }
+       ]
+      },
+      {
+       "name": "Airport",
+       "scope": "2024 · 120 significant structures destroyed",
+       "tip": "<b>Airport fire, 2024.</b> 120 destroyed significant structures in the CAL FIRE inspection. F1 0.945 on the first call, 0.950 on the refined second look. Scored by a version of the model trained without this fire.",
+       "bars": [
+        {
+         "value": 0.945,
+         "label": "0.95"
+        },
+        {
+         "value": 0.95,
+         "label": "0.95"
+        }
+       ]
+      },
+      {
+       "name": "Mountain",
+       "scope": "2024 · 182 significant structures destroyed",
+       "tip": "<b>Mountain fire, 2024.</b> 182 destroyed significant structures in the CAL FIRE inspection. F1 0.939 on the first call, 0.968 on the refined second look. Scored by a version of the model trained without this fire.",
+       "bars": [
+        {
+         "value": 0.939,
+         "label": "0.94"
+        },
+        {
+         "value": 0.968,
+         "label": "0.97"
+        }
+       ]
+      },
+      {
+       "name": "Bridge",
+       "scope": "2024 · 45 significant structures destroyed",
+       "tip": "<b>Bridge fire, 2024.</b> 45 destroyed significant structures in the CAL FIRE inspection. F1 0.870 on the first call, 0.930 on the refined second look. Scored by a version of the model trained without this fire.",
+       "bars": [
+        {
+         "value": 0.87,
+         "label": "0.87"
+        },
+        {
+         "value": 0.93,
+         "label": "0.93"
+        }
+       ]
+      }
+     ],
+     "note": "Homes and other significant structures, on every CAL FIRE-inspected fire since 2023 with 50 or more destroyed structures of any kind.",
+     "checks": {
+      "items": [
+       "Every CAL FIRE incident since 2023 with 50 or more destroyed structures of any kind is shown; none is left out. The count under each name is destroyed significant structures only.",
+       "First-call F1 is the mean of four model seeds, each trained without the fire it scores; the second look is scored the same way."
+      ]
+     }
+    }
+   ],
+   "footnote": "All results are research estimates from a model, not official damage assessments. They cover homes and other significant buildings; sheds, garages and trailers are often missing from building maps (see Limits). <a href=\"https://wri-science.github.io/public_publication/publication_htmls/structure_loss_pipeline/palisades-fire-inspectors-versus-our-model-2026-10-27.html\">See the full Palisades check &rarr;</a>"
+  },
+  {
+   "type": "prose",
+   "id": "limits",
+   "nav": "Limits",
+   "eyebrow": "Where it struggles",
+   "heading": "Where we still need to improve",
+   "paragraphs": [
+    "The model does best on what it was built for: homes and other <b>significant structures</b> in wildfires. By significant structures we mean the main buildings people live, work and gather in, such as houses, apartment buildings, businesses, schools and churches, as opposed to sheds, garages and other outbuildings.",
+    "It does worse in a few places. On <b>grass fires on the Great Plains</b> and in other open country, there is little vegetation around a building, so its loss leaves only a faint mark in the satellite images; the Sugar fire on the map shows the same problem in California's high desert. It is weaker <b>outside California</b>, because most of the inspection records we learn from are Californian. It misses more on <b>fires that destroy only a few buildings</b>. <b>Mobile homes, trailers and sheds</b> are often left out of the building maps we start from, so many go unscored. And it is not built for <b>urban fires</b>: one burned building among unburned ones is hard to see in 10 m satellite images.",
+    "These are the places we need to improve, and they all improve the same way: with more inspected damage records from the places and buildings where we do worst, and with time, as each new fire and each new year of imagery adds examples to learn from. If you hold damage records from fires like these, <a href=\"#partner\">we would like to work with you</a>."
+   ]
+  },
+  {
+   "type": "cta",
+   "id": "partner",
+   "nav": "Work with us",
+   "nav_cta": true,
+   "eyebrow": "Work with us",
+   "heading": "Test it on your fires",
+   "lede": "The most useful help is field damage records from places we have not tested yet. In Jasper, Alberta (2024), 93% of the model's destroyed calls matched the town's own assessment.",
+   "src": "As published on the live page (version of 2026-11-09)",
+   "steps_card": {
+    "title": "A validation-only pilot",
+    "steps": [
+     "<b>You share field damage records</b> for past fires, under your terms. We use them only for testing unless you agree otherwise.",
+     "<b>We run the unchanged model</b> on those fires.",
+     "<b>You get a building-by-building comparison</b> with your records. We publish only aggregate results."
+    ]
+   },
+   "contact_card": {
+    "title": "A record for your region",
+    "button_label": "Contact the research team",
+    "body": "If a pilot works well, the same method could build a long-term loss record for a state, province or country. We welcome introductions to agencies, researchers and funders."
+   }
+  },
+  {
+   "type": "team",
+   "id": "team",
+   "nav": "Team",
+   "eyebrow": "Research team",
+   "heading": "Who we are",
+   "lede": "We are scientists at the <a href=\"https://www.nceas.ucsb.edu/\">National Center for Ecological Analysis and Synthesis (NCEAS)</a> at <a href=\"https://www.ucsb.edu/\">UC Santa Barbara</a>, the team behind the <a href=\"https://wildfireindex.org/\">Wildfire Resilience Index</a>.",
+   "people": [
+    {
+     "name": "Dr. Ben Halpern",
+     "role": "Executive Director, NCEAS · Professor, Bren School, UC Santa Barbara",
+     "line": "Leads the Ocean Health Index and the Wildfire Resilience Index.",
+     "links": [
+      {
+       "label": "Halpern Lab",
+       "href": "https://www.benhalpernresearch.org/"
+      },
+      {
+       "label": "NCEAS roster",
+       "href": "https://www.nceas.ucsb.edu/about-us/our-people"
+      }
+     ]
+    },
+    {
+     "name": "Dr. Cat Fong",
+     "role": "Researcher, NCEAS",
+     "line": "Leads the Wildfire Resilience Index.",
+     "links": [
+      {
+       "label": "NCEAS roster",
+       "href": "https://www.nceas.ucsb.edu/about-us/our-people"
+      },
+      {
+       "label": "LinkedIn",
+       "href": "https://www.linkedin.com/in/dr-caitlin-fong"
+      }
+     ]
+    },
+    {
+     "name": "Carlo Broderick",
+     "role": "Staff Researcher, NCEAS",
+     "line": "Leads the structure-loss research and builds its models.",
+     "links": [
+      {
+       "label": "NCEAS roster",
+       "href": "https://www.nceas.ucsb.edu/about-us/our-people"
+      },
+      {
+       "label": "LinkedIn",
+       "href": "https://www.linkedin.com/in/carlo-broderick-55a78352"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "footer",
+   "disclaimer": "Scientific research by the National Center for Ecological Analysis and Synthesis (NCEAS) at UC Santa Barbara, shared for information only. Results are estimates from a research model, not official damage assessments or inspections; do not use them in an emergency or as the sole basis for a decision about a property.",
+   "credits": "Data: U.S. Geological Survey (Carlson et al. 2025, <a href=\"https://doi.org/10.5066/P1QX6UXD\">doi:10.5066/P1QX6UXD</a>); CAL FIRE Damage Inspection (DINS); BRIGHT damage labels (Lahaina); contains modified Copernicus Sentinel-2 data; USDA NAIP; USA Structures (FEMA / ORNL, CC BY 4.0); Microsoft building footprints and Overture Maps (ODbL); fire outlines from NIFC, MTBS and CAL FIRE FRAP. Map imagery: Esri and partners.",
+   "links": [
+    {
+     "label": "nceas.ucsb.edu",
+     "href": "https://www.nceas.ucsb.edu/"
+    },
+    {
+     "label": "ucsb.edu",
+     "href": "https://www.ucsb.edu/"
+    },
+    {
+     "label": "wildfireindex.org",
+     "href": "https://wildfireindex.org/"
+    }
+   ]
+  }
+ ]
+}
