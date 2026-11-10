@@ -1,0 +1,2422 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://github.com/NCEAS-AI/Coding-Agent-Skills-for-Data-Science/skills/external-facing-website/assets/site-spec.schema.json",
+ "title": "external-facing-website site spec",
+ "description": "One JSON file describes one landing page. Keys starting with '_' are comments and ignored. See references/site-spec.md.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "page",
+  "sections"
+ ],
+ "properties": {
+  "$schema": {
+   "type": "string"
+  },
+  "page": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "title": {
+     "type": "string",
+     "minLength": 3,
+     "description": "Program name; the <title> is 'title · date'."
+    },
+    "date": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+     "description": "Start date of the page; kept when it is updated so the link never changes. Must be a real date."
+    },
+    "description": {
+     "type": "string",
+     "minLength": 20,
+     "maxLength": 300,
+     "description": "Meta description. PUBLIC even on a PIN-gated page (folder README)."
+    },
+    "program_line": {
+     "type": "string",
+     "minLength": 1
+    },
+    "og_title": {
+     "type": "string",
+     "minLength": 1
+    },
+    "og_description": {
+     "type": "string",
+     "minLength": 1
+    },
+    "og_image": {
+     "type": "string",
+     "minLength": 1
+    },
+    "og_image_alt": {
+     "type": "string",
+     "minLength": 1
+    },
+    "site_name": {
+     "type": "string",
+     "minLength": 1
+    },
+    "built": {
+     "type": "string",
+     "description": "Date shown in the footer (default: today)."
+    },
+    "lang": {
+     "type": "string",
+     "minLength": 1
+    }
+   },
+   "required": [
+    "title",
+    "date",
+    "description"
+   ]
+  },
+  "contact": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "name": {
+     "type": "string",
+     "minLength": 1
+    },
+    "email": {
+     "type": "string",
+     "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+    },
+    "label": {
+     "type": "string",
+     "minLength": 1
+    }
+   },
+   "required": [
+    "name",
+    "email"
+   ],
+   "description": "Who partners write to. Default: contact in site.json."
+  },
+  "gate": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "tab_title": {
+     "type": "string",
+     "minLength": 1
+    },
+    "title": {
+     "type": "string",
+     "minLength": 1
+    },
+    "eyebrow": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tagline": {
+     "type": "string",
+     "minLength": 10,
+     "description": "One public sentence about the program. No numbers or results: the lock screen is not encrypted. Default: page.description."
+    },
+    "button": {
+     "type": "string",
+     "minLength": 1
+    },
+    "access_text": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "access_text_short": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "photo": {
+     "type": "string",
+     "minLength": 1
+    },
+    "photo_credit": {
+     "type": "string",
+     "minLength": 1
+    },
+    "contact": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "name": {
+       "type": "string",
+       "minLength": 1
+      },
+      "email": {
+       "type": "string",
+       "minLength": 1
+      }
+     },
+     "required": [
+      "name",
+      "email"
+     ]
+    },
+    "links": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "required": [
+       "label",
+       "href"
+      ],
+      "additionalProperties": false,
+      "properties": {
+       "label": {
+        "type": "string",
+        "minLength": 1
+       },
+       "href": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     },
+     "minItems": 0,
+     "maxItems": 5
+    },
+    "fine_print": {
+     "type": "string",
+     "minLength": 1
+    },
+    "lock_button": {
+     "type": "boolean",
+     "description": "Add a Lock button to the page header (default true)."
+    }
+   },
+   "description": "The branded PIN lock screen (wri-html-pages pin_gate.py >= 1.13.0 copies it onto the unencrypted screen)."
+  },
+  "sections": {
+   "type": "array",
+   "items": {
+    "oneOf": [
+     {
+      "$ref": "#/$defs/hero"
+     },
+     {
+      "$ref": "#/$defs/map"
+     },
+     {
+      "$ref": "#/$defs/tiles"
+     },
+     {
+      "$ref": "#/$defs/chart"
+     },
+     {
+      "$ref": "#/$defs/pipeline"
+     },
+     {
+      "$ref": "#/$defs/cards"
+     },
+     {
+      "$ref": "#/$defs/stats"
+     },
+     {
+      "$ref": "#/$defs/prose"
+     },
+     {
+      "$ref": "#/$defs/cta"
+     },
+     {
+      "$ref": "#/$defs/team"
+     },
+     {
+      "$ref": "#/$defs/refs"
+     },
+     {
+      "$ref": "#/$defs/footer"
+     }
+    ]
+   },
+   "minItems": 1
+  }
+ },
+ "$defs": {
+  "hero": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "type": {
+     "const": "hero"
+    },
+    "program_line": {
+     "type": "string",
+     "minLength": 1
+    },
+    "title": {
+     "type": "string",
+     "minLength": 1
+    },
+    "lede": {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+     },
+     "minItems": 1,
+     "maxItems": 3
+    },
+    "ctas": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "label": {
+        "type": "string",
+        "minLength": 1
+       },
+       "href": {
+        "type": "string",
+        "minLength": 1
+       },
+       "style": {
+        "type": "string",
+        "enum": [
+         "solid",
+         "outline"
+        ]
+       }
+      },
+      "required": [
+       "label",
+       "href"
+      ]
+     },
+     "minItems": 0,
+     "maxItems": 2
+    },
+    "pill": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "src": {
+     "description": "Where the number(s) came from: emitted only as an HTML comment so fact-checkers can trace them. Cite a document and section, never a private path.",
+     "type": [
+      "string",
+      "array"
+     ],
+     "items": {
+      "type": "string"
+     }
+    }
+   },
+   "required": [
+    "type",
+    "lede"
+   ],
+   "description": "The opening: program line, big title, one compact paragraph. No statistics here."
+  },
+  "map": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "type": {
+     "const": "map"
+    },
+    "id": {
+     "type": "string",
+     "pattern": "^[a-z][a-z0-9-]*$",
+     "description": "Section anchor (#id); also the nav target."
+    },
+    "nav": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Label in the top nav. Omit to leave the section out of the nav."
+    },
+    "nav_cta": {
+     "type": "boolean",
+     "description": "Show this section's nav item as the navy pill, last in the nav (the partner call)."
+    },
+    "eyebrow": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Small gold uppercase label over the heading."
+    },
+    "heading": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede_size": {
+     "type": "string",
+     "enum": [
+      "sm",
+      "md",
+      "lg"
+     ],
+     "description": "sm = 1.05rem (default), md = 1.12rem, lg = 1.2rem."
+    },
+    "wide": {
+     "type": "boolean",
+     "description": "Let the section head run the full width."
+    },
+    "background": {
+     "type": "string",
+     "enum": [
+      "auto",
+      "paper",
+      "white"
+     ],
+     "description": "auto (default) alternates paper / white."
+    },
+    "src": {
+     "description": "Where the number(s) came from: emitted only as an HTML comment so fact-checkers can trace them. Cite a document and section, never a private path.",
+     "type": [
+      "string",
+      "array"
+     ],
+     "items": {
+      "type": "string"
+     }
+    },
+    "iframe": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "src": {
+       "type": "string",
+       "minLength": 1
+      },
+      "title": {
+       "type": "string",
+       "minLength": 1
+      },
+      "height": {
+       "type": "string",
+       "minLength": 1,
+       "pattern": "^([0-9.]+(px|vh|svh|dvh|rem|em|%)|(min|max|clamp)\\([0-9a-z.,% +*/-]*\\))$"
+      },
+      "phone_height": {
+       "type": "string",
+       "minLength": 1,
+       "pattern": "^([0-9.]+(px|vh|svh|dvh|rem|em|%)|(min|max|clamp)\\([0-9a-z.,% +*/-]*\\))$"
+      }
+     },
+     "required": [
+      "src",
+      "title"
+     ]
+    },
+    "frame": {
+     "type": "string",
+     "enum": [
+      "plain",
+      "dashed"
+     ]
+    },
+    "caption": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "legend": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "color": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "^(#[0-9a-fA-F]{3,8}|var\\(--[a-z0-9-]+\\)|[a-z]+)$"
+       },
+       "label": {
+        "type": "string",
+        "minLength": 1
+       },
+       "tip": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+       }
+      },
+      "required": [
+       "color",
+       "label"
+      ]
+     },
+     "minItems": 0,
+     "maxItems": 8
+    },
+    "tiles": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "title": {
+        "type": "string",
+        "minLength": 1
+       },
+       "value": {
+        "type": "string",
+        "minLength": 1
+       },
+       "text": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+       },
+       "place": {
+        "type": "string",
+        "minLength": 1
+       },
+       "tip": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+       },
+       "flagged": {
+        "type": "boolean"
+       },
+       "flag_label": {
+        "type": "string",
+        "minLength": 1
+       },
+       "go_label": {
+        "type": "string",
+        "minLength": 1
+       },
+       "color": {
+        "type": "string",
+        "enum": [
+         "right",
+         "navy",
+         "flag"
+        ]
+       },
+       "src": {
+        "description": "Where the number(s) came from: emitted only as an HTML comment so fact-checkers can trace them. Cite a document and section, never a private path.",
+        "type": [
+         "string",
+         "array"
+        ],
+        "items": {
+         "type": "string"
+        }
+       }
+      },
+      "required": [
+       "title",
+       "value",
+       "text"
+      ]
+     },
+     "minItems": 0,
+     "maxItems": 4
+    },
+    "popup": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "place": {
+       "type": "string",
+       "minLength": 1
+      },
+      "title": {
+       "type": "string",
+       "minLength": 1
+      },
+      "lead": {
+       "type": "string",
+       "minLength": 1,
+       "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+      },
+      "reasons_heading": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reasons": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+       },
+       "minItems": 1
+      },
+      "helps_heading": {
+       "type": "string",
+       "minLength": 1
+      },
+      "helps": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+       },
+       "minItems": 1
+      }
+     },
+     "required": [
+      "place",
+      "title",
+      "lead",
+      "reasons",
+      "helps"
+     ]
+    },
+    "how": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "summary": {
+       "type": "string",
+       "minLength": 1
+      },
+      "items": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+       },
+       "minItems": 1
+      }
+     },
+     "required": [
+      "items"
+     ]
+    },
+    "hint": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    }
+   },
+   "required": [
+    "type",
+    "id",
+    "heading",
+    "iframe"
+   ],
+   "description": "Embedded interactive map (iframe) with optional place tiles and a weak-case pop-up."
+  },
+  "tiles": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "type": {
+     "const": "tiles"
+    },
+    "id": {
+     "type": "string",
+     "pattern": "^[a-z][a-z0-9-]*$",
+     "description": "Section anchor (#id); also the nav target."
+    },
+    "nav": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Label in the top nav. Omit to leave the section out of the nav."
+    },
+    "nav_cta": {
+     "type": "boolean",
+     "description": "Show this section's nav item as the navy pill, last in the nav (the partner call)."
+    },
+    "eyebrow": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Small gold uppercase label over the heading."
+    },
+    "heading": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede_size": {
+     "type": "string",
+     "enum": [
+      "sm",
+      "md",
+      "lg"
+     ],
+     "description": "sm = 1.05rem (default), md = 1.12rem, lg = 1.2rem."
+    },
+    "wide": {
+     "type": "boolean",
+     "description": "Let the section head run the full width."
+    },
+    "background": {
+     "type": "string",
+     "enum": [
+      "auto",
+      "paper",
+      "white"
+     ],
+     "description": "auto (default) alternates paper / white."
+    },
+    "src": {
+     "description": "Where the number(s) came from: emitted only as an HTML comment so fact-checkers can trace them. Cite a document and section, never a private path.",
+     "type": [
+      "string",
+      "array"
+     ],
+     "items": {
+      "type": "string"
+     }
+    },
+    "chart": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "title": {
+       "type": "string",
+       "minLength": 1
+      },
+      "subtitle": {
+       "type": "string",
+       "minLength": 1,
+       "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+      },
+      "aria_label": {
+       "type": "string",
+       "minLength": 20,
+       "description": "One full sentence saying what the chart shows, for screen readers."
+      },
+      "categories": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+         "label": {
+          "type": "string",
+          "minLength": 1
+         },
+         "value": {
+          "type": [
+           "number",
+           "null"
+          ],
+          "minimum": 0
+         },
+         "gap": {
+          "type": "boolean",
+          "description": "A hatched column: no data for this category (e.g. years not in a record)."
+         },
+         "tip": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+         },
+         "cols": {
+          "type": "object",
+          "description": "Extra columns for the 'See the numbers' table, e.g. {\"Fires\": 4}."
+         }
+        },
+        "required": [
+         "label"
+        ]
+       },
+       "minItems": 2,
+       "maxItems": 60
+      },
+      "value_label": {
+       "type": "string",
+       "description": "Noun for the value in the default tooltip, e.g. 'buildings destroyed'."
+      },
+      "ymax": {
+       "type": "number",
+       "exclusiveMinimum": 0
+      },
+      "ytick_step": {
+       "type": "number",
+       "exclusiveMinimum": 0
+      },
+      "ytick_format": {
+       "type": "string",
+       "enum": [
+        "k",
+        "plain",
+        "pct"
+       ]
+      },
+      "label_every": {
+       "type": "integer",
+       "minimum": 1,
+       "description": "Show every n-th x label (default: about 7 labels)."
+      },
+      "annotations": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+         "at": {
+          "type": "string",
+          "minLength": 1
+         },
+         "text": {
+          "type": "string",
+          "minLength": 1
+         },
+         "detail": {
+          "type": "string",
+          "minLength": 1
+         }
+        },
+        "required": [
+         "at",
+         "text"
+        ]
+       },
+       "minItems": 0,
+       "maxItems": 3
+      },
+      "gap_label": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "text": {
+         "type": "string",
+         "minLength": 1
+        },
+        "detail": {
+         "type": "string",
+         "minLength": 1
+        }
+       },
+       "required": [
+        "text"
+       ]
+      },
+      "totals": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+         "value": {
+          "type": "string",
+          "minLength": 1
+         },
+         "label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+         },
+         "gap": {
+          "type": "boolean"
+         },
+         "assert_sum": {
+          "type": "boolean",
+          "description": "Fail the build unless value equals the sum of the category values."
+         }
+        },
+        "required": [
+         "value",
+         "label"
+        ]
+       },
+       "minItems": 0,
+       "maxItems": 3
+      },
+      "key": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+         "label": {
+          "type": "string",
+          "minLength": 1
+         },
+         "kind": {
+          "type": "string",
+          "enum": [
+           "bar",
+           "gap"
+          ]
+         }
+        },
+        "required": [
+         "label"
+        ]
+       },
+       "minItems": 0,
+       "maxItems": 3
+      },
+      "table": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "summary": {
+         "type": "string",
+         "minLength": 1
+        },
+        "note": {
+         "type": "string",
+         "minLength": 1,
+         "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+        },
+        "label_header": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value_header": {
+         "type": "string",
+         "minLength": 1
+        },
+        "split": {
+         "type": "integer",
+         "minimum": 1,
+         "maximum": 4
+        }
+       },
+       "required": [
+        "label_header",
+        "value_header"
+       ]
+      },
+      "src": {
+       "description": "Where the number(s) came from: emitted only as an HTML comment so fact-checkers can trace them. Cite a document and section, never a private path.",
+       "type": [
+        "string",
+        "array"
+       ],
+       "items": {
+        "type": "string"
+       }
+      }
+     },
+     "required": [
+      "title",
+      "aria_label",
+      "categories"
+     ],
+     "description": "A simple bar (column) chart, one series, values from the spec. No dual axes."
+    },
+    "tiles": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "title": {
+        "type": "string",
+        "minLength": 1
+       },
+       "body": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+       },
+       "icon": {
+        "type": "string",
+        "enum": [
+         "clock",
+         "patch",
+         "gap",
+         "house",
+         "sat",
+         "table",
+         "flame",
+         "shield",
+         "flask",
+         "city",
+         "map",
+         "doc",
+         "people",
+         "chart",
+         "handshake",
+         "globe",
+         "leaf",
+         "drop",
+         "search",
+         "check"
+        ]
+       },
+       "link": {
+        "type": "object",
+        "required": [
+         "label",
+         "href"
+        ],
+        "additionalProperties": false,
+        "properties": {
+         "label": {
+          "type": "string",
+          "minLength": 1
+         },
+         "href": {
+          "type": "string",
+          "minLength": 1
+         }
+        }
+       },
+       "src": {
+        "description": "Where the number(s) came from: emitted only as an HTML comment so fact-checkers can trace them. Cite a document and section, never a private path.",
+        "type": [
+         "string",
+         "array"
+        ],
+        "items": {
+         "type": "string"
+        }
+       }
+      },
+      "required": [
+       "title",
+       "body"
+      ]
+     },
+     "minItems": 2,
+     "maxItems": 4
+    }
+   },
+   "required": [
+    "type",
+    "id",
+    "heading",
+    "tiles"
+   ],
+   "description": "Why it matters: a head, an optional chart, then 2-4 tiles in a row."
+  },
+  "chart": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "type": {
+     "const": "chart"
+    },
+    "id": {
+     "type": "string",
+     "pattern": "^[a-z][a-z0-9-]*$",
+     "description": "Section anchor (#id); also the nav target."
+    },
+    "nav": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Label in the top nav. Omit to leave the section out of the nav."
+    },
+    "nav_cta": {
+     "type": "boolean",
+     "description": "Show this section's nav item as the navy pill, last in the nav (the partner call)."
+    },
+    "eyebrow": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Small gold uppercase label over the heading."
+    },
+    "heading": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede_size": {
+     "type": "string",
+     "enum": [
+      "sm",
+      "md",
+      "lg"
+     ],
+     "description": "sm = 1.05rem (default), md = 1.12rem, lg = 1.2rem."
+    },
+    "wide": {
+     "type": "boolean",
+     "description": "Let the section head run the full width."
+    },
+    "background": {
+     "type": "string",
+     "enum": [
+      "auto",
+      "paper",
+      "white"
+     ],
+     "description": "auto (default) alternates paper / white."
+    },
+    "src": {
+     "description": "Where the number(s) came from: emitted only as an HTML comment so fact-checkers can trace them. Cite a document and section, never a private path.",
+     "type": [
+      "string",
+      "array"
+     ],
+     "items": {
+      "type": "string"
+     }
+    },
+    "chart": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "title": {
+       "type": "string",
+       "minLength": 1
+      },
+      "subtitle": {
+       "type": "string",
+       "minLength": 1,
+       "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+      },
+      "aria_label": {
+       "type": "string",
+       "minLength": 20,
+       "description": "One full sentence saying what the chart shows, for screen readers."
+      },
+      "categories": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+         "label": {
+          "type": "string",
+          "minLength": 1
+         },
+         "value": {
+          "type": [
+           "number",
+           "null"
+          ],
+          "minimum": 0
+         },
+         "gap": {
+          "type": "boolean",
+          "description": "A hatched column: no data for this category (e.g. years not in a record)."
+         },
+         "tip": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+         },
+         "cols": {
+          "type": "object",
+          "description": "Extra columns for the 'See the numbers' table, e.g. {\"Fires\": 4}."
+         }
+        },
+        "required": [
+         "label"
+        ]
+       },
+       "minItems": 2,
+       "maxItems": 60
+      },
+      "value_label": {
+       "type": "string",
+       "description": "Noun for the value in the default tooltip, e.g. 'buildings destroyed'."
+      },
+      "ymax": {
+       "type": "number",
+       "exclusiveMinimum": 0
+      },
+      "ytick_step": {
+       "type": "number",
+       "exclusiveMinimum": 0
+      },
+      "ytick_format": {
+       "type": "string",
+       "enum": [
+        "k",
+        "plain",
+        "pct"
+       ]
+      },
+      "label_every": {
+       "type": "integer",
+       "minimum": 1,
+       "description": "Show every n-th x label (default: about 7 labels)."
+      },
+      "annotations": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+         "at": {
+          "type": "string",
+          "minLength": 1
+         },
+         "text": {
+          "type": "string",
+          "minLength": 1
+         },
+         "detail": {
+          "type": "string",
+          "minLength": 1
+         }
+        },
+        "required": [
+         "at",
+         "text"
+        ]
+       },
+       "minItems": 0,
+       "maxItems": 3
+      },
+      "gap_label": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "text": {
+         "type": "string",
+         "minLength": 1
+        },
+        "detail": {
+         "type": "string",
+         "minLength": 1
+        }
+       },
+       "required": [
+        "text"
+       ]
+      },
+      "totals": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+         "value": {
+          "type": "string",
+          "minLength": 1
+         },
+         "label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+         },
+         "gap": {
+          "type": "boolean"
+         },
+         "assert_sum": {
+          "type": "boolean",
+          "description": "Fail the build unless value equals the sum of the category values."
+         }
+        },
+        "required": [
+         "value",
+         "label"
+        ]
+       },
+       "minItems": 0,
+       "maxItems": 3
+      },
+      "key": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+         "label": {
+          "type": "string",
+          "minLength": 1
+         },
+         "kind": {
+          "type": "string",
+          "enum": [
+           "bar",
+           "gap"
+          ]
+         }
+        },
+        "required": [
+         "label"
+        ]
+       },
+       "minItems": 0,
+       "maxItems": 3
+      },
+      "table": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "summary": {
+         "type": "string",
+         "minLength": 1
+        },
+        "note": {
+         "type": "string",
+         "minLength": 1,
+         "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+        },
+        "label_header": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value_header": {
+         "type": "string",
+         "minLength": 1
+        },
+        "split": {
+         "type": "integer",
+         "minimum": 1,
+         "maximum": 4
+        }
+       },
+       "required": [
+        "label_header",
+        "value_header"
+       ]
+      },
+      "src": {
+       "description": "Where the number(s) came from: emitted only as an HTML comment so fact-checkers can trace them. Cite a document and section, never a private path.",
+       "type": [
+        "string",
+        "array"
+       ],
+       "items": {
+        "type": "string"
+       }
+      }
+     },
+     "required": [
+      "title",
+      "aria_label",
+      "categories"
+     ],
+     "description": "A simple bar (column) chart, one series, values from the spec. No dual axes."
+    },
+    "note": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    }
+   },
+   "required": [
+    "type",
+    "id",
+    "heading",
+    "chart"
+   ]
+  },
+  "pipeline": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "type": {
+     "const": "pipeline"
+    },
+    "id": {
+     "type": "string",
+     "pattern": "^[a-z][a-z0-9-]*$",
+     "description": "Section anchor (#id); also the nav target."
+    },
+    "nav": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Label in the top nav. Omit to leave the section out of the nav."
+    },
+    "nav_cta": {
+     "type": "boolean",
+     "description": "Show this section's nav item as the navy pill, last in the nav (the partner call)."
+    },
+    "eyebrow": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Small gold uppercase label over the heading."
+    },
+    "heading": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede_size": {
+     "type": "string",
+     "enum": [
+      "sm",
+      "md",
+      "lg"
+     ],
+     "description": "sm = 1.05rem (default), md = 1.12rem, lg = 1.2rem."
+    },
+    "wide": {
+     "type": "boolean",
+     "description": "Let the section head run the full width."
+    },
+    "background": {
+     "type": "string",
+     "enum": [
+      "auto",
+      "paper",
+      "white"
+     ],
+     "description": "auto (default) alternates paper / white."
+    },
+    "src": {
+     "description": "Where the number(s) came from: emitted only as an HTML comment so fact-checkers can trace them. Cite a document and section, never a private path.",
+     "type": [
+      "string",
+      "array"
+     ],
+     "items": {
+      "type": "string"
+     }
+    },
+    "flow": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "in": {
+       "type": "string",
+       "minLength": 1
+      },
+      "out": {
+       "type": "string",
+       "minLength": 1
+      }
+     },
+     "required": [
+      "in",
+      "out"
+     ]
+    },
+    "steps": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "title": {
+        "type": "string",
+        "minLength": 1
+       },
+       "body": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+       },
+       "icon": {
+        "type": "string",
+        "enum": [
+         "clock",
+         "patch",
+         "gap",
+         "house",
+         "sat",
+         "table",
+         "flame",
+         "shield",
+         "flask",
+         "city",
+         "map",
+         "doc",
+         "people",
+         "chart",
+         "handshake",
+         "globe",
+         "leaf",
+         "drop",
+         "search",
+         "check"
+        ]
+       },
+       "label": {
+        "type": "string",
+        "minLength": 1
+       },
+       "chips": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "label": {
+           "type": "string",
+           "minLength": 1
+          },
+          "href": {
+           "type": "string",
+           "minLength": 1
+          },
+          "tip": {
+           "type": "string",
+           "minLength": 1,
+           "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+          }
+         },
+         "required": [
+          "label"
+         ]
+        }
+       },
+       "list": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+         "summary": {
+          "type": "string",
+          "minLength": 1
+         },
+         "items": {
+          "type": "array",
+          "items": {
+           "type": "object",
+           "additionalProperties": false,
+           "properties": {
+            "name": {
+             "type": "string",
+             "minLength": 1
+            },
+            "href": {
+             "type": "string",
+             "minLength": 1
+            },
+            "detail": {
+             "type": "string",
+             "minLength": 1,
+             "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+            }
+           },
+           "required": [
+            "name"
+           ]
+          },
+          "minItems": 1
+         }
+        },
+        "required": [
+         "summary",
+         "items"
+        ]
+       },
+       "src": {
+        "description": "Where the number(s) came from: emitted only as an HTML comment so fact-checkers can trace them. Cite a document and section, never a private path.",
+        "type": [
+         "string",
+         "array"
+        ],
+        "items": {
+         "type": "string"
+        }
+       }
+      },
+      "required": [
+       "title",
+       "body"
+      ]
+     },
+     "minItems": 2,
+     "maxItems": 4
+    }
+   },
+   "required": [
+    "type",
+    "id",
+    "steps"
+   ],
+   "description": "'X in -> Y out': numbered steps. Give flow (in/out) or heading."
+  },
+  "cards": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "type": {
+     "const": "cards"
+    },
+    "id": {
+     "type": "string",
+     "pattern": "^[a-z][a-z0-9-]*$",
+     "description": "Section anchor (#id); also the nav target."
+    },
+    "nav": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Label in the top nav. Omit to leave the section out of the nav."
+    },
+    "nav_cta": {
+     "type": "boolean",
+     "description": "Show this section's nav item as the navy pill, last in the nav (the partner call)."
+    },
+    "eyebrow": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Small gold uppercase label over the heading."
+    },
+    "heading": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede_size": {
+     "type": "string",
+     "enum": [
+      "sm",
+      "md",
+      "lg"
+     ],
+     "description": "sm = 1.05rem (default), md = 1.12rem, lg = 1.2rem."
+    },
+    "wide": {
+     "type": "boolean",
+     "description": "Let the section head run the full width."
+    },
+    "background": {
+     "type": "string",
+     "enum": [
+      "auto",
+      "paper",
+      "white"
+     ],
+     "description": "auto (default) alternates paper / white."
+    },
+    "src": {
+     "description": "Where the number(s) came from: emitted only as an HTML comment so fact-checkers can trace them. Cite a document and section, never a private path.",
+     "type": [
+      "string",
+      "array"
+     ],
+     "items": {
+      "type": "string"
+     }
+    },
+    "cards": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "title": {
+        "type": "string",
+        "minLength": 1
+       },
+       "icon": {
+        "type": "string",
+        "enum": [
+         "clock",
+         "patch",
+         "gap",
+         "house",
+         "sat",
+         "table",
+         "flame",
+         "shield",
+         "flask",
+         "city",
+         "map",
+         "doc",
+         "people",
+         "chart",
+         "handshake",
+         "globe",
+         "leaf",
+         "drop",
+         "search",
+         "check"
+        ]
+       },
+       "bullets": {
+        "type": "array",
+        "items": {
+         "type": "string",
+         "minLength": 1,
+         "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+        },
+        "minItems": 1,
+        "maxItems": 3
+       },
+       "body": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+       }
+      },
+      "required": [
+       "title"
+      ]
+     },
+     "minItems": 2,
+     "maxItems": 4
+    }
+   },
+   "required": [
+    "type",
+    "id",
+    "heading",
+    "cards"
+   ],
+   "description": "Who it helps: 2-4 cards with an icon and 1-3 bullets."
+  },
+  "stats": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "type": {
+     "const": "stats"
+    },
+    "id": {
+     "type": "string",
+     "pattern": "^[a-z][a-z0-9-]*$",
+     "description": "Section anchor (#id); also the nav target."
+    },
+    "nav": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Label in the top nav. Omit to leave the section out of the nav."
+    },
+    "nav_cta": {
+     "type": "boolean",
+     "description": "Show this section's nav item as the navy pill, last in the nav (the partner call)."
+    },
+    "eyebrow": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Small gold uppercase label over the heading."
+    },
+    "heading": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede_size": {
+     "type": "string",
+     "enum": [
+      "sm",
+      "md",
+      "lg"
+     ],
+     "description": "sm = 1.05rem (default), md = 1.12rem, lg = 1.2rem."
+    },
+    "wide": {
+     "type": "boolean",
+     "description": "Let the section head run the full width."
+    },
+    "background": {
+     "type": "string",
+     "enum": [
+      "auto",
+      "paper",
+      "white"
+     ],
+     "description": "auto (default) alternates paper / white."
+    },
+    "src": {
+     "description": "Where the number(s) came from: emitted only as an HTML comment so fact-checkers can trace them. Cite a document and section, never a private path.",
+     "type": [
+      "string",
+      "array"
+     ],
+     "items": {
+      "type": "string"
+     }
+    },
+    "stats": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "value": {
+        "type": "string",
+        "minLength": 1
+       },
+       "label": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+       },
+       "scope": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+       },
+       "tip": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+       },
+       "src": {
+        "description": "Where the number(s) came from: emitted only as an HTML comment so fact-checkers can trace them. Cite a document and section, never a private path.",
+        "type": [
+         "string",
+         "array"
+        ],
+        "items": {
+         "type": "string"
+        }
+       }
+      },
+      "required": [
+       "value",
+       "label",
+       "scope"
+      ]
+     },
+     "minItems": 2,
+     "maxItems": 4
+    },
+    "bar_cards": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "title": {
+        "type": "string",
+        "minLength": 1
+       },
+       "key": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "color": {
+           "type": "string",
+           "enum": [
+            "navy",
+            "gold"
+           ]
+          },
+          "label": {
+           "type": "string",
+           "minLength": 1
+          }
+         },
+         "required": [
+          "color",
+          "label"
+         ]
+        },
+        "minItems": 1,
+        "maxItems": 2
+       },
+       "rows": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "name": {
+           "type": "string",
+           "minLength": 1
+          },
+          "scope": {
+           "type": "string",
+           "minLength": 1,
+           "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+          },
+          "tip": {
+           "type": "string",
+           "minLength": 1,
+           "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+          },
+          "bars": {
+           "type": "array",
+           "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+             "value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+             },
+             "label": {
+              "type": "string",
+              "minLength": 1
+             }
+            },
+            "required": [
+             "value"
+            ]
+           },
+           "minItems": 1,
+           "maxItems": 2
+          },
+          "src": {
+           "description": "Where the number(s) came from: emitted only as an HTML comment so fact-checkers can trace them. Cite a document and section, never a private path.",
+           "type": [
+            "string",
+            "array"
+           ],
+           "items": {
+            "type": "string"
+           }
+          }
+         },
+         "required": [
+          "name",
+          "bars"
+         ]
+        },
+        "minItems": 1
+       },
+       "note": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+       },
+       "checks": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+         "summary": {
+          "type": "string",
+          "minLength": 1
+         },
+         "items": {
+          "type": "array",
+          "items": {
+           "type": "string",
+           "minLength": 1,
+           "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+          },
+          "minItems": 1
+         }
+        },
+        "required": [
+         "items"
+        ]
+       }
+      },
+      "required": [
+       "title",
+       "rows"
+      ]
+     },
+     "minItems": 0,
+     "maxItems": 2
+    },
+    "footnote": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    }
+   },
+   "required": [
+    "type",
+    "id",
+    "heading",
+    "stats"
+   ],
+   "description": "Accuracy / results: big numbers (each with its scope) and optional paired-bar cards."
+  },
+  "prose": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "type": {
+     "const": "prose"
+    },
+    "id": {
+     "type": "string",
+     "pattern": "^[a-z][a-z0-9-]*$",
+     "description": "Section anchor (#id); also the nav target."
+    },
+    "nav": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Label in the top nav. Omit to leave the section out of the nav."
+    },
+    "nav_cta": {
+     "type": "boolean",
+     "description": "Show this section's nav item as the navy pill, last in the nav (the partner call)."
+    },
+    "eyebrow": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Small gold uppercase label over the heading."
+    },
+    "heading": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede_size": {
+     "type": "string",
+     "enum": [
+      "sm",
+      "md",
+      "lg"
+     ],
+     "description": "sm = 1.05rem (default), md = 1.12rem, lg = 1.2rem."
+    },
+    "wide": {
+     "type": "boolean",
+     "description": "Let the section head run the full width."
+    },
+    "background": {
+     "type": "string",
+     "enum": [
+      "auto",
+      "paper",
+      "white"
+     ],
+     "description": "auto (default) alternates paper / white."
+    },
+    "src": {
+     "description": "Where the number(s) came from: emitted only as an HTML comment so fact-checkers can trace them. Cite a document and section, never a private path.",
+     "type": [
+      "string",
+      "array"
+     ],
+     "items": {
+      "type": "string"
+     }
+    },
+    "paragraphs": {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+     },
+     "minItems": 1,
+     "maxItems": 6
+    }
+   },
+   "required": [
+    "type",
+    "id",
+    "heading",
+    "paragraphs"
+   ],
+   "description": "Plain paragraphs (Limits). No statistics."
+  },
+  "cta": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "type": {
+     "const": "cta"
+    },
+    "id": {
+     "type": "string",
+     "pattern": "^[a-z][a-z0-9-]*$",
+     "description": "Section anchor (#id); also the nav target."
+    },
+    "nav": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Label in the top nav. Omit to leave the section out of the nav."
+    },
+    "nav_cta": {
+     "type": "boolean",
+     "description": "Show this section's nav item as the navy pill, last in the nav (the partner call)."
+    },
+    "eyebrow": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Small gold uppercase label over the heading."
+    },
+    "heading": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede_size": {
+     "type": "string",
+     "enum": [
+      "sm",
+      "md",
+      "lg"
+     ],
+     "description": "sm = 1.05rem (default), md = 1.12rem, lg = 1.2rem."
+    },
+    "wide": {
+     "type": "boolean",
+     "description": "Let the section head run the full width."
+    },
+    "background": {
+     "type": "string",
+     "enum": [
+      "auto",
+      "paper",
+      "white"
+     ],
+     "description": "auto (default) alternates paper / white."
+    },
+    "src": {
+     "description": "Where the number(s) came from: emitted only as an HTML comment so fact-checkers can trace them. Cite a document and section, never a private path.",
+     "type": [
+      "string",
+      "array"
+     ],
+     "items": {
+      "type": "string"
+     }
+    },
+    "steps_card": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "title": {
+       "type": "string",
+       "minLength": 1
+      },
+      "steps": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+       },
+       "minItems": 1,
+       "maxItems": 5
+      }
+     },
+     "required": [
+      "title",
+      "steps"
+     ]
+    },
+    "contact_card": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "title": {
+       "type": "string",
+       "minLength": 1
+      },
+      "body": {
+       "type": "string",
+       "minLength": 1,
+       "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+      },
+      "button_label": {
+       "type": "string",
+       "minLength": 1
+      }
+     },
+     "required": [
+      "title"
+     ]
+    }
+   },
+   "required": [
+    "type",
+    "id",
+    "heading"
+   ],
+   "description": "The partner call: a small concrete pilot and a contact button (mailto)."
+  },
+  "team": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "type": {
+     "const": "team"
+    },
+    "id": {
+     "type": "string",
+     "pattern": "^[a-z][a-z0-9-]*$",
+     "description": "Section anchor (#id); also the nav target."
+    },
+    "nav": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Label in the top nav. Omit to leave the section out of the nav."
+    },
+    "nav_cta": {
+     "type": "boolean",
+     "description": "Show this section's nav item as the navy pill, last in the nav (the partner call)."
+    },
+    "eyebrow": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Small gold uppercase label over the heading."
+    },
+    "heading": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede_size": {
+     "type": "string",
+     "enum": [
+      "sm",
+      "md",
+      "lg"
+     ],
+     "description": "sm = 1.05rem (default), md = 1.12rem, lg = 1.2rem."
+    },
+    "wide": {
+     "type": "boolean",
+     "description": "Let the section head run the full width."
+    },
+    "background": {
+     "type": "string",
+     "enum": [
+      "auto",
+      "paper",
+      "white"
+     ],
+     "description": "auto (default) alternates paper / white."
+    },
+    "src": {
+     "description": "Where the number(s) came from: emitted only as an HTML comment so fact-checkers can trace them. Cite a document and section, never a private path.",
+     "type": [
+      "string",
+      "array"
+     ],
+     "items": {
+      "type": "string"
+     }
+    },
+    "people": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "name": {
+        "type": "string",
+        "minLength": 1
+       },
+       "role": {
+        "type": "string",
+        "minLength": 1
+       },
+       "line": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+       },
+       "initials": {
+        "type": "string",
+        "minLength": 1
+       },
+       "links": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "required": [
+          "label",
+          "href"
+         ],
+         "additionalProperties": false,
+         "properties": {
+          "label": {
+           "type": "string",
+           "minLength": 1
+          },
+          "href": {
+           "type": "string",
+           "minLength": 1
+          }
+         }
+        },
+        "minItems": 0,
+        "maxItems": 3
+       }
+      },
+      "required": [
+       "name",
+       "role"
+      ]
+     },
+     "minItems": 1,
+     "maxItems": 6
+    }
+   },
+   "required": [
+    "type",
+    "id",
+    "heading",
+    "people"
+   ]
+  },
+  "refs": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "type": {
+     "const": "refs"
+    },
+    "id": {
+     "type": "string",
+     "pattern": "^[a-z][a-z0-9-]*$",
+     "description": "Section anchor (#id); also the nav target."
+    },
+    "nav": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Label in the top nav. Omit to leave the section out of the nav."
+    },
+    "nav_cta": {
+     "type": "boolean",
+     "description": "Show this section's nav item as the navy pill, last in the nav (the partner call)."
+    },
+    "eyebrow": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Small gold uppercase label over the heading."
+    },
+    "heading": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "lede_size": {
+     "type": "string",
+     "enum": [
+      "sm",
+      "md",
+      "lg"
+     ],
+     "description": "sm = 1.05rem (default), md = 1.12rem, lg = 1.2rem."
+    },
+    "wide": {
+     "type": "boolean",
+     "description": "Let the section head run the full width."
+    },
+    "background": {
+     "type": "string",
+     "enum": [
+      "auto",
+      "paper",
+      "white"
+     ],
+     "description": "auto (default) alternates paper / white."
+    },
+    "src": {
+     "description": "Where the number(s) came from: emitted only as an HTML comment so fact-checkers can trace them. Cite a document and section, never a private path.",
+     "type": [
+      "string",
+      "array"
+     ],
+     "items": {
+      "type": "string"
+     }
+    },
+    "refs": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "name": {
+        "type": "string",
+        "minLength": 1
+       },
+       "href": {
+        "type": "string",
+        "minLength": 1
+       },
+       "detail": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+       }
+      },
+      "required": [
+       "name"
+      ]
+     },
+     "minItems": 1
+    },
+    "collapsed": {
+     "type": "boolean"
+    },
+    "summary": {
+     "type": "string",
+     "minLength": 1
+    }
+   },
+   "required": [
+    "type",
+    "id",
+    "heading",
+    "refs"
+   ]
+  },
+  "footer": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "type": {
+     "const": "footer"
+    },
+    "disclaimer": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "credits": {
+     "type": "string",
+     "minLength": 1,
+     "description": "Text; inline HTML from an allow-list (b, strong, i, em, a, br, span, sup, sub, abbr, small, code; href to http(s), mailto, #anchor or a relative path). Anything else is refused."
+    },
+    "links": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "required": [
+       "label",
+       "href"
+      ],
+      "additionalProperties": false,
+      "properties": {
+       "label": {
+        "type": "string",
+        "minLength": 1
+       },
+       "href": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     },
+     "minItems": 0,
+     "maxItems": 6
+    },
+    "built": {
+     "type": "string",
+     "minLength": 1
+    }
+   },
+   "required": [
+    "type",
+    "disclaimer"
+   ]
+  }
+ }
+}

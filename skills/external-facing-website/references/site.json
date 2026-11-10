@@ -1,0 +1,28 @@
+{
+  "_why": "Landing-page settings that are not in wri-html-pages identity.json. A personal copy at ~/.config/external-facing-website/site.json (or $EFW_SITE_CONFIG) wins and survives updates. Logo files are looked up next to the copy in use first, then in this skill's assets/logos/. Never put a PIN here.",
+  "contact": {"name": "", "email": "", "label": "Request access"},
+  "program_line": "An NCEAS Research Program",
+  "gate_org": "NCEAS",
+  "logo_row": [
+    {"short": "UCSB", "url": "https://www.ucsb.edu/", "logo": "ucsb-logo-navy.svg", "logo_dark_bg": "ucsb-logo-white.svg",
+     "height": 15, "alt": "UC Santa Barbara", "link_label": "UC Santa Barbara"},
+    {"short": "NCEAS", "url": "https://www.nceas.ucsb.edu/", "logo": "nceas-logo-dark.svg", "logo_dark_bg": "nceas-logo-white.svg",
+     "height": 30, "alt": "National Center for Ecological Analysis and Synthesis (NCEAS)", "link_label": "NCEAS"},
+    {"short": "WRI", "url": "https://wildfireindex.org/", "logo": "wri-logo.png", "logo_dark_bg": "wri-logo.png",
+     "height": 28, "alt": "", "wordmark": "Wildfire<br>Resilience Index", "link_label": "Wildfire Resilience Index"}
+  ],
+  "institutions_text": "the National Center for Ecological Analysis and Synthesis (NCEAS) at UC Santa Barbara and the Wildfire Resilience Index",
+  "favicon": "favicon.png",
+  "og_image": "https://wri-science.github.io/public_publication/publication_htmls/site_assets/wri-flame-preview.png",
+  "og_image_alt": "Wildfire Resilience Index flame",
+  "site_name": "NCEAS · UC Santa Barbara",
+  "lock_screen": {
+    "button": "Open the site",
+    "photo": "lock-aerial-naip.jpg",
+    "photo_credit": "Aerial photo: USDA National Agriculture Imagery Program, Manatee County, Florida.",
+    "fine_print": "Scientific research shared for information only.",
+    "links": [{"label": "NCEAS", "href": "https://www.nceas.ucsb.edu/"}, {"label": "UC Santa Barbara", "href": "https://www.ucsb.edu/"},
+              {"label": "Wildfire Resilience Index", "href": "https://wildfireindex.org/"}]
+  },
+  "default_access": "gated"
+}
